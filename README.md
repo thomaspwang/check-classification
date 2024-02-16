@@ -51,3 +51,8 @@ If the package will be used across our team, let Tommy and Jeremy know and then 
 ```
 pip freeze > requirements.txt
 ```
+
+
+## Running Tests (TO-DO)
+
+## Folder Structure (TO-DO)

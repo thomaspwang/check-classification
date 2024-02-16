@@ -4,13 +4,13 @@
 
 You only need to do this **once**. You can check if you've completed the environment by checking that a `.venv/` file exists in your local repository. 
 
-**Step 1** 
+**Step 1** <br>
 Make sure you have an updated Python version with
 ```
 python --version  # should be 3.10 or higher
 ```
 
-**Step 2** 
+**Step 2** <br>
 Navigate to the root of this repository (`sofi-check-classification`) and create a new virtual environment with either
 ```
 python -m venv venv
@@ -18,7 +18,7 @@ python -m venv venv
 python3 -m venv venv
 ```
 
-**Step 3** 
+**Step 3** <br>
 Activate the venv with
 ```
 source venv/bin/activate

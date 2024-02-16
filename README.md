@@ -1,4 +1,4 @@
-# DiversaTech x Sofi Spring 2024<br><br>Check Classification and Fraud Detection
+### DiversaTech x Sofi Spring 2024<br><br>Check Classification and Fraud Detection
 
 ## Initial Environment Setup
 

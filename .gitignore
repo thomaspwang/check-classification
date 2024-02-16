@@ -1,2 +1,8 @@
-sofi/*
-lib/__pycache__/*
+# Environments
+venv/
+
+# Caches
+__pycache__/
+
+# Package metadata
+sofi_check_classification.egg-info/

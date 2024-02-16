@@ -1,0 +1,7 @@
+exceptiongroup==1.2.0
+iniconfig==2.0.0
+packaging==23.2
+pluggy==1.4.0
+pytest==8.0.0
+-e git+https://github.com/JermXT/sofi-check-classification@1eab68f58348952e9cbf33f3fa79841ec5a94250#egg=sofi_check_classification
+tomli==2.0.1

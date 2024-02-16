@@ -4,6 +4,7 @@
 
 You only need to do this **once**. You can check if you've completed the environment by checking that a `.venv/` file exists in your local repository. 
 
+<br>
 **Step 1** <br>
 Make sure you have an updated Python version with
 ```

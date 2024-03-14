@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+import cv2
+import sys
+
 class RegionType(Enum):
     """ Enum for check region type 
     
@@ -43,3 +46,26 @@ def extract_bounding_boxes(image_path: Path) -> dict[RegionType, BoundingBox]:
     """
     raise NotImplementedError("This function has not been implemented yet.")
 
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python3 bbox_extract.py <image_path>")
+        sys.exit(1)
+    
+    # Parse the image path from command-line arguments
+    image_path = Path(sys.argv[1])
+    
+    # Call the function to extract bounding boxes
+    bounding_boxes, region_to_bbox = extract_bounding_boxes(image_path)
+    
+    # Load the image using OpenCV
+    image = cv2.imread(str(image_path))
+    
+    # Draw bounding boxes and label them
+    for region, bbox in bounding_boxes.items():
+        cv2.rectangle(image, (bbox.x_min, bbox.y_min), (bbox.x_max, bbox.y_max), (0, 255, 0), 2)
+        cv2.putText(image, region.value, (bbox.x_min, bbox.y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+    
+    # Display the image
+    cv2.imshow("Bounding Boxes", image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()

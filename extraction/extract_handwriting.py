@@ -27,6 +27,7 @@ def parse_handwriting(
         case _:
             raise ValueError(f"Invalid mode: {mode}")
 
+
 def parse_handwriting_doctr(
         img_path: Path,
         region : RegionType,
@@ -34,6 +35,7 @@ def parse_handwriting_doctr(
 ) -> str:
     """ Parse handwriting using DocTR model """
     raise NotImplementedError("This function has not been implemented yet.")
+
 
 def parse_handwriting_trocr(
         img_path: Path,
@@ -43,6 +45,7 @@ def parse_handwriting_trocr(
     """ Parse handwriting using TrOCR model """
     raise NotImplementedError("This function has not been implemented yet.")
 
+
 def parse_handwriting_llava(
         img_path: Path,
         region : RegionType,
@@ -50,6 +53,7 @@ def parse_handwriting_llava(
 ) -> str:
     """ Parse handwriting using LLAVA model """
     raise NotImplementedError("This function has not been implemented yet.")
+
 
 def parse_handwriting_amazon_textract(
         img_path: Path,

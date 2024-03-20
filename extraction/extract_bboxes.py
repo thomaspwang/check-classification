@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from typing import List
 
 import cv2
 import sys
@@ -15,6 +16,7 @@ class RegionType(Enum):
     AMOUNT = 1
     PAYEE = 2
     MEMO = 3
+    OTHER = 4
 
 @dataclass
 class BoundingBox:
@@ -27,17 +29,17 @@ class BoundingBox:
     max_x: int
     min_y: int
 
-    region_type: RegionType
+    region_type: RegionType = RegionType.OTHER
 
 
-def extract_bounding_boxes(image_path: Path) -> dict[RegionType, BoundingBox]:
+def extract_bounding_boxes(image_path: Path) -> List[BoundingBox]:
     """ Extract bounding boxes from check image
     
     Args:
         image_path (Path): Path to check image
     
     Returns:
-        dict[RegionType, BoundingBox]: Dict mapping regions of interest to bounding boxes
+        dict[BoundingBox]: Dict mapping regions of interest to bounding boxes
 
     Notes:
     The bounding box must include ALL the information pertaining to the region of interest,
@@ -55,15 +57,15 @@ if __name__ == "__main__":
     image_path = Path(sys.argv[1])
     
     # Call the function to extract bounding boxes
-    bounding_boxes, region_to_bbox = extract_bounding_boxes(image_path)
+    bounding_boxes = extract_bounding_boxes(image_path)
     
     # Load the image using OpenCV
     image = cv2.imread(str(image_path))
     
     # Draw bounding boxes and label them
-    for region, bbox in bounding_boxes.items():
+    for bbox in bounding_boxes():
         cv2.rectangle(image, (bbox.x_min, bbox.y_min), (bbox.x_max, bbox.y_max), (0, 255, 0), 2)
-        cv2.putText(image, region.value, (bbox.x_min, bbox.y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+        cv2.putText(image, (bbox.x_min, bbox.y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
     
     # Display the image
     cv2.imshow("Bounding Boxes", image)

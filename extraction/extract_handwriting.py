@@ -25,7 +25,7 @@ def parse_handwriting(
         case Mode.LLAVA:
             return parse_handwriting_llava(img_path, region, box)
         case Mode.AMAZON_TEXTRACT:
-            return parse_handwriting_amazon_textract(img_path, region, box)
+            return parse_handwriting_amazon_textract()
         case _:
             raise ValueError(f"Invalid mode: {mode}")
 
@@ -317,22 +317,28 @@ def merge_overlapping_boxes(boxes):
 
 image_path = "/Users/katiewang/Desktop/warped_IMG_1599.jpg"
 image = cv2.imread(image_path)
-max_distance = 150
-max_corner = 30
+max_distance = 20
+max_corner = 20
 bounding_boxes = parse_handwriting_amazon_textract()
-print(bounding_boxes)
+# print(bounding_boxes)
 merged_rects = merge_nearby_boxes(bounding_boxes, max_distance, max_corner)
+# i = 0
+# while i < 50:
+#     merged_rects = merge_nearby_boxes(merged_rects, max_distance, max_corner + i)
+#     i += 10
+
 overlapped_merged = merge_overlapping_boxes(merged_rects)
 
 while overlapped_merged != merge_overlapping_boxes(overlapped_merged):
     merged_rects = merged_rects + overlapped_merged
     overlapped_merged = merge_overlapping_boxes(overlapped_merged)
 
+
 # Draw merged rectangles on the image
 for rect in overlapped_merged:
     x, y, w, h = rect
     print(x, y, w, h)
-    cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    cv2.rectangle(image, ((int)(x), (int)(y)), ((int)(x + w), (int)(y + h)), (0, 255, 0), 2)
 
 cv2.imshow("merged boxes", image) 
 cv2.waitKey(0) 

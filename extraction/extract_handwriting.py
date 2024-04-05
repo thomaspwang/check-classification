@@ -2,6 +2,7 @@ from enum import Enum
 from pathlib import Path
 from extract_bboxes import BoundingBox, RegionType
 import numpy as np
+import cv2
 
 class Mode(Enum):
     DOC_TR = "DocTR"
@@ -78,12 +79,12 @@ import io
 from PIL import Image, ImageDraw
 
 
-boundingbox_list = []
+
 def parse_handwriting_amazon_textract(
-        img_path: Path,
-        region : RegionType,
-        box : BoundingBox,
-) -> str:
+        # img_path: Path,
+        # region : RegionType,
+        # box : BoundingBox,
+) -> list:
     """ Parse handwriting using Amazon Textract """
 
     # Get the check which is stored in stevensegawa's bucket called aws-for-checks
@@ -110,7 +111,7 @@ def parse_handwriting_amazon_textract(
 
     # Get the text blocks
     blocks=response['Blocks']
-
+    boundingbox_list = []
     width, height = image.size 
     print("IMPORTANT:", width, height)   
     print ('Detected Document Text')
@@ -134,10 +135,10 @@ def parse_handwriting_amazon_textract(
                 w = block['Geometry']['BoundingBox']['Width'] * width
                 h = block['Geometry']['BoundingBox']['Height'] * height
                 boundingbox_list += [(x, y, w, h)]
-                draw=ImageDraw.Draw(image)
-
+                # draw=ImageDraw.Draw(image)
+    return boundingbox_list
             # Draw WORD - Green -  start of word, red - end of word
-            """
+"""
             if block['BlockType'] == "WORD":
                 draw.line([(width * block['Geometry']['Polygon'][0]['X'],
                 height * block['Geometry']['Polygon'][0]['Y']),
@@ -152,8 +153,7 @@ def parse_handwriting_amazon_textract(
                 fill='red',
                 width=2)  
             """
-            block_count = len(blocks)
-            print("Blocks detected: " + str(block_count))
+            
             # Draw box around entire LINE
             # if block['BlockType'] == "LINE":
             #     points=[]
@@ -161,6 +161,10 @@ def parse_handwriting_amazon_textract(
             #     for polygon in block['Geometry']['Polygon']:
             #         points.append((width * polygon['X'], height * polygon['Y']))
             #     draw.polygon((points), outline='red')
+    # Display the image
+    # image.show()
+    # block_count = len(blocks)
+    # print("Blocks detected: " + str(block_count))
     # print(boundingbox_list)    
 
 def merge_nearby_boxes(rects, max_center_distance, max_corner_distance):
@@ -310,9 +314,14 @@ def merge_overlapping_boxes(boxes):
     return merged_boxes
 
 
+
+image_path = "/Users/katiewang/Desktop/warped_IMG_1599.jpg"
+image = cv2.imread(image_path)
 max_distance = 150
 max_corner = 30
-merged_rects = merge_nearby_boxes(boundingbox_list, max_distance, max_corner)
+bounding_boxes = parse_handwriting_amazon_textract()
+print(bounding_boxes)
+merged_rects = merge_nearby_boxes(bounding_boxes, max_distance, max_corner)
 overlapped_merged = merge_overlapping_boxes(merged_rects)
 
 while overlapped_merged != merge_overlapping_boxes(overlapped_merged):
@@ -323,6 +332,13 @@ while overlapped_merged != merge_overlapping_boxes(overlapped_merged):
 for rect in overlapped_merged:
     x, y, w, h = rect
     print(x, y, w, h)
+    cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+cv2.imshow("merged boxes", image) 
+cv2.waitKey(0) 
+cv2.destroyAllWindows() 
+
+    
 
 
 
@@ -333,8 +349,7 @@ for rect in overlapped_merged:
 
 
 
-    # Display the image
-    image.show()
+
 
 
 """

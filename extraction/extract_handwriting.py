@@ -46,31 +46,31 @@ def parse_handwriting_trocr(
     raise NotImplementedError("This function has not been implemented yet.")
 
 
-def parse_handwriting_llava(
-        img_path: Path,
-        region : RegionType,
-        box : BoundingBox,
-) -> str:
-    """ Parse handwriting using LLAVA model """
-    from gradio_client import Client
-    # load Client
-    client = Client("https://llava.hliu.cc/")
-    # submit prompt including image and text
-    result = client.predict(
-        "Please tell me the name of the payee, the amount paid on the check, the date marked, and the address/memo on this check.",	# str in Textbox component
-        img_path, # filepath for Image component
-        "Default", # Literal['Crop', 'Resize', 'Pad', 'Default']  in 'Preprocess for non-square image' Radio component
-        api_name="/add_text" # choose endpoint
-    )
-    result = client.predict(
-        "llava-v1.6-34b",
-        .1, # float (numeric value between 0.0 and 1.0) in 'Temperature' Slider component
-        .3, # float (numeric value between 0.0 and 1.0) in 'Top P' Slider component
-        150, # float (numeric value between 0 and 1024) in 'Max output tokens' Slider component
-        api_name="/http_bot" # choose endpoint
-    )
-    print('\n\n\nRESULTS:')
-    print(result[0][1])
+# def parse_handwriting_llava(
+#         img_path: Path,
+#         region : RegionType,
+#         box : BoundingBox,
+# ) -> str:
+#     """ Parse handwriting using LLAVA model """
+#     from gradio_client import Client
+#     # load Client
+#     client = Client("https://llava.hliu.cc/")
+#     # submit prompt including image and text
+#     result = client.predict(
+#         "Please tell me the name of the payee, the amount paid on the check, the date marked, and the address/memo on this check.",	# str in Textbox component
+#         img_path, # filepath for Image component
+#         "Default", # Literal['Crop', 'Resize', 'Pad', 'Default']  in 'Preprocess for non-square image' Radio component
+#         api_name="/add_text" # choose endpoint
+    # # )
+    # result = client.predict(
+    #     "llava-v1.6-34b",
+    #     .1, # float (numeric value between 0.0 and 1.0) in 'Temperature' Slider component
+    #     .3, # float (numeric value between 0.0 and 1.0) in 'Top P' Slider component
+    #     150, # float (numeric value between 0 and 1024) in 'Max output tokens' Slider component
+    #     api_name="/http_bot" # choose endpoint
+    # )
+    # print('\n\n\nRESULTS:')
+    # print(result[0][1])
     
 import boto3
 import io
@@ -84,11 +84,11 @@ def parse_handwriting_amazon_textract(
     """ Parse handwriting using Amazon Textract """
 
     # Get the check which is stored in stevensegawa's bucket called aws-for-checks
-    session = boto3.Session(profile_name='stevensegawa')
+    session = boto3.Session(profile_name='katiewang')
     s3_connection = session.resource('s3')
     client = session.client('textract', region_name='us-west-1')
-    bucket = 'aws-for-checks'
-    document = 'marcuscheck.jpg'
+    bucket = 'katie-sofi-bucket'
+    document = 'warped_IMG_1599.jpg'
     
     # Get the document from S3  
     s3_object = s3_connection.Object(bucket, document)
@@ -107,9 +107,11 @@ def parse_handwriting_amazon_textract(
 
     # Get the text blocks
     blocks=response['Blocks']
-    width, height = image.size    
+
+    width, height = image.size 
+    print("IMPORTANT:", width, height)   
     print ('Detected Document Text')
-   
+    boundingbox_list = []
     # Create image showing bounding box/polygon the detected lines/text
     for block in blocks:
             # Display information about a block returned by text detection
@@ -118,13 +120,17 @@ def parse_handwriting_amazon_textract(
                 if block['BlockType'] != 'PAGE':
                     print('Detected: ' + block['Text'])
                     print('Confidence: ' + "{:.2f}".format(block['Confidence']) + "%")
-
+                
                 print('Id: {}'.format(block['Id']))
                 if 'Relationships' in block:
                     print('Relationships: {}'.format(block['Relationships']))
                 print('Bounding Box: {}'.format(block['Geometry']['BoundingBox']))
                 print('Polygon: {}'.format(block['Geometry']['Polygon']))
-                print()
+                x = block['Geometry']['BoundingBox']['Left'] * width
+                y = block['Geometry']['BoundingBox']['Top'] * height
+                w = block['Geometry']['BoundingBox']['Width'] * width
+                h = block['Geometry']['BoundingBox']['Height'] * height
+                boundingbox_list += [(x, y, w, h)]
                 draw=ImageDraw.Draw(image)
 
             # Draw WORD - Green -  start of word, red - end of word
@@ -150,8 +156,8 @@ def parse_handwriting_amazon_textract(
 
                 for polygon in block['Geometry']['Polygon']:
                     points.append((width * polygon['X'], height * polygon['Y']))
-
-                draw.polygon((points), outline='red')    
+                draw.polygon((points), outline='red')
+    print(boundingbox_list)    
 
     # Display the image
     image.show()

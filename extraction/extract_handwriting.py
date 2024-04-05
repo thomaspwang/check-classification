@@ -1,6 +1,7 @@
 from enum import Enum
 from pathlib import Path
 from extract_bboxes import BoundingBox, RegionType
+import numpy as np
 
 class Mode(Enum):
     DOC_TR = "DocTR"
@@ -76,6 +77,8 @@ import boto3
 import io
 from PIL import Image, ImageDraw
 
+
+boundingbox_list = []
 def parse_handwriting_amazon_textract(
         img_path: Path,
         region : RegionType,
@@ -111,7 +114,7 @@ def parse_handwriting_amazon_textract(
     width, height = image.size 
     print("IMPORTANT:", width, height)   
     print ('Detected Document Text')
-    boundingbox_list = []
+    
     # Create image showing bounding box/polygon the detected lines/text
     for block in blocks:
             # Display information about a block returned by text detection
@@ -149,20 +152,190 @@ def parse_handwriting_amazon_textract(
                 fill='red',
                 width=2)  
             """
-  
+            block_count = len(blocks)
+            print("Blocks detected: " + str(block_count))
             # Draw box around entire LINE
-            if block['BlockType'] == "LINE":
-                points=[]
+            # if block['BlockType'] == "LINE":
+            #     points=[]
 
-                for polygon in block['Geometry']['Polygon']:
-                    points.append((width * polygon['X'], height * polygon['Y']))
-                draw.polygon((points), outline='red')
-    print(boundingbox_list)    
+            #     for polygon in block['Geometry']['Polygon']:
+            #         points.append((width * polygon['X'], height * polygon['Y']))
+            #     draw.polygon((points), outline='red')
+    # print(boundingbox_list)    
+
+def merge_nearby_boxes(rects, max_center_distance, max_corner_distance):
+    """
+    Merge nearby bounding boxes in a list based on both center distance and distance between corners.
+
+    Args:
+        rects: List of tuples (x, y, w, h) representing bounding boxes.
+        max_center_distance: Maximum center distance to consider for merging.
+        max_corner_distance: Maximum distance between corners to consider for merging.
+
+    Returns:
+        List of merged bounding boxes.
+    """
+    def corner_distance(box1, box2):
+        """
+        Calculate the distance between the corners of two bounding boxes.
+
+        Args:
+            box1: Tuple (x1, y1, w1, h1) representing the first box.
+            box2: Tuple (x2, y2, w2, h2) representing the second box.
+
+        Returns:
+            Minimum distance between the corners.
+        """
+        x1, y1, w1, h1 = box1
+        x2, y2, w2, h2 = box2
+
+        # Calculate the corners of each bounding box
+        corners_box1 = [(x1, y1), (x1 + w1, y1), (x1, y1 + h1), (x1 + w1, y1 + h1)]
+        corners_box2 = [(x2, y2), (x2 + w2, y2), (x2, y2 + h2), (x2 + w2, y2 + h2)]
+
+        min_distance = float('inf')
+        for corner1 in corners_box1:
+            for corner2 in corners_box2:
+                distance = np.sqrt((corner1[0] - corner2[0])**2 + (corner1[1] - corner2[1])**2)
+                min_distance = min(min_distance, distance)
+
+        return min_distance
+
+    merged_rects = []
+    for rect in rects:
+        x, y, w, h = rect
+        center_x = x + w // 2
+        center_y = y + h // 2
+
+        merged = False
+        for i, merged_rect in enumerate(merged_rects):
+            merged_x, merged_y, merged_w, merged_h = merged_rect
+            merged_center_x = merged_x + merged_w // 2
+            merged_center_y = merged_y + merged_h // 2
+
+            center_distance = np.sqrt((center_x - merged_center_x)**2 + (center_y - merged_center_y)**2)
+            corner_distance_val = corner_distance(rect, merged_rect)
+
+            if center_distance < max_center_distance or corner_distance_val < max_corner_distance:
+                # Merge by expanding the merged rectangle
+                new_x = min(x, merged_x)
+                new_y = min(y, merged_y)
+                new_w = max(x + w, merged_x + merged_w) - new_x
+                new_h = max(y + h, merged_y + merged_h) - new_y
+                merged_rects[i] = (new_x, new_y, new_w, new_h)
+                merged = True
+                break
+
+        if not merged:
+            merged_rects.append(rect)
+
+    return merged_rects
+
+def merge_overlapping_boxes(boxes):
+
+    """
+    Merge overlapping bounding boxes in a list.
+
+    Args:
+        boxes: List of tuples (x, y, w, h) representing bounding boxes.
+
+    Returns:
+        List of merged bounding boxes.
+    """
+    def calculate_iou(box1, box2):
+        """
+        Calculate the Intersection over Union (IoU) of two bounding boxes.
+
+        Args:
+            box1: Tuple (x1, y1, w1, h1) representing the first box.
+            box2: Tuple (x2, y2, w2, h2) representing the second box.
+
+        Returns:
+            IoU (Intersection over Union) value.
+        """
+        x1, y1, w1, h1 = box1
+        x2, y2, w2, h2 = box2
+
+        # Calculate the coordinates of the intersection rectangle
+        x_intersection = max(x1, x2)
+        y_intersection = max(y1, y2)
+        w_intersection = min(x1 + w1, x2 + w2) - x_intersection
+        h_intersection = min(y1 + h1, y2 + h2) - y_intersection
+
+        if w_intersection <= 0 or h_intersection <= 0:
+
+            return 0.0
+
+        # Calculate the area of intersection rectangle
+        intersection_area = w_intersection * h_intersection
+
+        # Calculate the area of both bounding boxes
+        area1 = w1 * h1
+        area2 = w2 * h2
+
+        # Calculate the Union area by using Formula: Union(A, B) = A + B - Inter(A, B)
+        union_area = area1 + area2 - intersection_area
+
+        # Calculate the Intersection over Union (IoU)
+        iou = intersection_area / union_area
+        return iou
+
+    # Sort boxes based on their x-coordinate
+    sorted_boxes = sorted(boxes, key=lambda x: x[0])
+
+    merged_boxes = []
+    while len(sorted_boxes) > 0:
+        current_box = sorted_boxes.pop(0)
+        x1, y1, w1, h1 = current_box
+        merged_box = list(current_box)
+
+        # Check if the current box overlaps with any other box
+        overlapping_boxes = [box for box in sorted_boxes if calculate_iou(current_box, box) > 0]
+
+        # Merge the overlapping boxes
+        for box in overlapping_boxes:
+            x2, y2, w2, h2 = box
+            x_min = min(x1, x2)
+            y_min = min(y1, y2)
+            x_max = max(x1 + w1, x2 + w2)
+            y_max = max(y1 + h1, y2 + h2)
+            merged_box = [x_min, y_min, x_max - x_min, y_max - y_min]
+        
+        merged_boxes.append(tuple(merged_box))
+        # print(merged_boxes)
+        # Remove the merged and overlapping boxes from the list
+        sorted_boxes = [box for box in sorted_boxes if box not in overlapping_boxes]
+        
+    
+    return merged_boxes
+
+
+max_distance = 150
+max_corner = 30
+merged_rects = merge_nearby_boxes(boundingbox_list, max_distance, max_corner)
+overlapped_merged = merge_overlapping_boxes(merged_rects)
+
+while overlapped_merged != merge_overlapping_boxes(overlapped_merged):
+    merged_rects = merged_rects + overlapped_merged
+    overlapped_merged = merge_overlapping_boxes(overlapped_merged)
+
+# Draw merged rectangles on the image
+for rect in overlapped_merged:
+    x, y, w, h = rect
+    print(x, y, w, h)
+
+
+
+
+
+
+
+
+
 
     # Display the image
     image.show()
-    block_count = len(blocks)
-    print("Blocks detected: " + str(block_count))
+
 
 """
 # Practice Running LLAVA Model

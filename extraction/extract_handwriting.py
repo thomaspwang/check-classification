@@ -88,10 +88,10 @@ def parse_handwriting_amazon_textract(
     """ Parse handwriting using Amazon Textract """
 
     # Get the check which is stored in stevensegawa's bucket called aws-for-checks
-    session = boto3.Session(profile_name='katiewang')
+    session = boto3.Session(profile_name='stevensegawa')
     s3_connection = session.resource('s3')
     client = session.client('textract', region_name='us-west-1')
-    bucket = 'katie-sofi-bucket'
+    bucket = 'aws-for-checks'
     document = 'warped_IMG_1599.jpg'
     
     # Get the document from S3  
@@ -315,7 +315,8 @@ def merge_overlapping_boxes(boxes):
 
 
 
-image_path = "/Users/katiewang/Desktop/warped_IMG_1599.jpg"
+image_path = "/Users/Urvi/Desktop/warped_IMG_1599.jpg"
+
 image = cv2.imread(image_path)
 max_distance = 20
 max_corner = 20
@@ -340,22 +341,10 @@ for rect in overlapped_merged:
     print(x, y, w, h)
     cv2.rectangle(image, ((int)(x), (int)(y)), ((int)(x + w), (int)(y + h)), (0, 255, 0), 2)
 
-cv2.imshow("merged boxes", image) 
+cv2.imshow("merged boxes", image)
+cv2.imwrite("cooked.jpg", image)
 cv2.waitKey(0) 
-cv2.destroyAllWindows() 
-
-    
-
-
-
-
-
-
-
-
-
-
-
+cv2.destroyAllWindows()
 
 
 """

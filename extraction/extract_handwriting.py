@@ -92,7 +92,7 @@ def parse_handwriting_amazon_textract(
     s3_connection = session.resource('s3')
     client = session.client('textract', region_name='us-west-1')
     bucket = 'katie-sofi-bucket'
-    document = 'warped_IMG_1599.jpg'
+    document = 'IMG_8514.jpg'
     
     # Get the document from S3  
     s3_object = s3_connection.Object(bucket, document)
@@ -136,6 +136,7 @@ def parse_handwriting_amazon_textract(
                 h = block['Geometry']['BoundingBox']['Height'] * height
                 boundingbox_list += [(x, y, w, h)]
                 # draw=ImageDraw.Draw(image)
+    
     return boundingbox_list
             # Draw WORD - Green -  start of word, red - end of word
 """
@@ -315,13 +316,15 @@ def merge_overlapping_boxes(boxes):
 
 
 
-image_path = "/Users/katiewang/Desktop/warped_IMG_1599.jpg"
+image_path = "/Users/katiewang/Desktop/IMG_8514.jpg"
 image = cv2.imread(image_path)
 max_distance = 20
-max_corner = 20
+max_corner = (int)(image.shape[0] * 0.02)
 bounding_boxes = parse_handwriting_amazon_textract()
+micr_bounding_boxes = bounding_boxes[-2:]
+
 # print(bounding_boxes)
-merged_rects = merge_nearby_boxes(bounding_boxes, max_distance, max_corner)
+merged_rects = merge_nearby_boxes(bounding_boxes[:-2], max_distance, max_corner)
 # i = 0
 # while i < 50:
 #     merged_rects = merge_nearby_boxes(merged_rects, max_distance, max_corner + i)
@@ -337,7 +340,10 @@ while overlapped_merged != merge_overlapping_boxes(overlapped_merged):
 # Draw merged rectangles on the image
 for rect in overlapped_merged:
     x, y, w, h = rect
-    print(x, y, w, h)
+    # print(x, y, w, h)
+    cv2.rectangle(image, ((int)(x), (int)(y)), ((int)(x + w), (int)(y + h)), (0, 255, 0), 2)
+for rect in micr_bounding_boxes:
+    x, y, w, h = rect
     cv2.rectangle(image, ((int)(x), (int)(y)), ((int)(x + w), (int)(y + h)), (0, 255, 0), 2)
 
 cv2.imshow("merged boxes", image) 

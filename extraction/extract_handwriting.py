@@ -1,6 +1,5 @@
 from enum import Enum
 from pathlib import Path
-from extract_bboxes import BoundingBox, RegionType
 import numpy as np
 import cv2
 
@@ -13,17 +12,15 @@ class Mode(Enum):
 
 def parse_handwriting(
         img_path: Path,
-        region : RegionType,
-        box : BoundingBox,
         mode : Mode,
 ) -> str:
     match mode:
         case Mode.DOC_TR:
-            return parse_handwriting_doctr(img_path, region, box)
+            return parse_handwriting_doctr(img_path)
         case Mode.TR_OCR:
-            return parse_handwriting_trocr(img_path, region, box)
+            return parse_handwriting_trocr(img_path)
         case Mode.LLAVA:
-            return parse_handwriting_llava(img_path, region, box)
+            return parse_handwriting_llava(img_path)
         case Mode.AMAZON_TEXTRACT:
             return parse_handwriting_amazon_textract()
         case _:
@@ -80,11 +77,7 @@ from PIL import Image, ImageDraw
 
 
 
-def parse_handwriting_amazon_textract(
-        # img_path: Path,
-        # region : RegionType,
-        # box : BoundingBox,
-) -> list:
+def parse_handwriting_amazon_textract() -> list:
     """ Parse handwriting using Amazon Textract """
 
     # Get the check which is stored in stevensegawa's bucket called aws-for-checks

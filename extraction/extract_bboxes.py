@@ -246,12 +246,13 @@ bucket_name = 'aws-for-checks'
 file_name = 'warped_IMG_1599.jpg'
 
 #Code to run the algorithm
-max_distance = 20
-max_corner = 20
 bucket_image = get_image(profile, bucket_name, file_name)
 image = cv2.cvtColor(np.array(bucket_image), cv2.COLOR_RGB2BGR)
+max_distance = 20
+max_corner = (int)(image.shape[0] * 0.02)
 bounding_boxes = extract_bounding_boxes(profile, region, bucket_name, file_name)
-merged_rects = merge_nearby_boxes(bounding_boxes, max_distance, max_corner)
+micr_bounding_boxes = bounding_boxes[-2:]
+merged_rects = merge_nearby_boxes(bounding_boxes[:-2], max_distance, max_corner)
 overlapped_merged = merge_overlapping_boxes(merged_rects)
 
 while overlapped_merged != merge_overlapping_boxes(overlapped_merged):
@@ -262,7 +263,10 @@ while overlapped_merged != merge_overlapping_boxes(overlapped_merged):
 # Draw merged rectangles on the image
 for rect in overlapped_merged:
     x, y, w, h = rect
-    print(x, y, w, h)
+    # print(x, y, w, h)
+    cv2.rectangle(image, ((int)(x), (int)(y)), ((int)(x + w), (int)(y + h)), (0, 255, 0), 2)
+for rect in micr_bounding_boxes:
+    x, y, w, h = rect
     cv2.rectangle(image, ((int)(x), (int)(y)), ((int)(x + w), (int)(y + h)), (0, 255, 0), 2)
 
 cv2.imshow("merged boxes", image)

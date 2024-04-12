@@ -92,7 +92,7 @@ def parse_handwriting_amazon_textract(
     s3_connection = session.resource('s3')
     client = session.client('textract', region_name='us-west-1')
     bucket = 'katie-sofi-bucket'
-    document = 'IMG_8514.jpg'
+    document = 'warped_IMG_1599.jpg'
     
     # Get the document from S3  
     s3_object = s3_connection.Object(bucket, document)
@@ -316,7 +316,7 @@ def merge_overlapping_boxes(boxes):
 
 
 
-image_path = "/Users/katiewang/Desktop/IMG_8514.jpg"
+image_path = "/Users/katiewang/Desktop/warped_IMG_1599.jpg"
 image = cv2.imread(image_path)
 max_distance = 20
 max_corner = (int)(image.shape[0] * 0.02)

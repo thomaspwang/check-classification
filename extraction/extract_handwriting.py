@@ -1,6 +1,5 @@
 from enum import Enum
 from pathlib import Path
-from extract_bboxes import BoundingBox, RegionType
 import numpy as np
 import cv2
 
@@ -13,17 +12,15 @@ class Mode(Enum):
 
 def parse_handwriting(
         img_path: Path,
-        region : RegionType,
-        box : BoundingBox,
         mode : Mode,
 ) -> str:
     match mode:
         case Mode.DOC_TR:
-            return parse_handwriting_doctr(img_path, region, box)
+            return parse_handwriting_doctr(img_path)
         case Mode.TR_OCR:
-            return parse_handwriting_trocr(img_path, region, box)
+            return parse_handwriting_trocr(img_path)
         case Mode.LLAVA:
-            return parse_handwriting_llava(img_path, region, box)
+            return parse_handwriting_llava(img_path)
         case Mode.AMAZON_TEXTRACT:
             return parse_handwriting_amazon_textract()
         case _:
@@ -80,18 +77,14 @@ from PIL import Image, ImageDraw
 
 
 
-def parse_handwriting_amazon_textract(
-        # img_path: Path,
-        # region : RegionType,
-        # box : BoundingBox,
-) -> list:
+def parse_handwriting_amazon_textract() -> list:
     """ Parse handwriting using Amazon Textract """
 
     # Get the check which is stored in stevensegawa's bucket called aws-for-checks
-    session = boto3.Session(profile_name='katiewang')
+    session = boto3.Session(profile_name='stevensegawa')
     s3_connection = session.resource('s3')
     client = session.client('textract', region_name='us-west-1')
-    bucket = 'katie-sofi-bucket'
+    bucket = 'aws-for-checks'
     document = 'warped_IMG_1599.jpg'
     
     # Get the document from S3  
@@ -316,7 +309,8 @@ def merge_overlapping_boxes(boxes):
 
 
 
-image_path = "/Users/katiewang/Desktop/warped_IMG_1599.jpg"
+image_path = "/Users/Urvi/Desktop/warped_IMG_1599.jpg"
+
 image = cv2.imread(image_path)
 max_distance = 20
 max_corner = (int)(image.shape[0] * 0.02)
@@ -346,22 +340,10 @@ for rect in micr_bounding_boxes:
     x, y, w, h = rect
     cv2.rectangle(image, ((int)(x), (int)(y)), ((int)(x + w), (int)(y + h)), (0, 255, 0), 2)
 
-cv2.imshow("merged boxes", image) 
+cv2.imshow("merged boxes", image)
+cv2.imwrite("cooked.jpg", image)
 cv2.waitKey(0) 
-cv2.destroyAllWindows() 
-
-    
-
-
-
-
-
-
-
-
-
-
-
+cv2.destroyAllWindows()
 
 
 """

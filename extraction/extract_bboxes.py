@@ -37,7 +37,12 @@ class BoundingBox:
         """Return the bottom-right corner of the bounding box."""
         return (self.x + self.width, self.y + self.height)
 
-def extract_bounding_boxes(profile, region, bucket_name, file_name) -> list[BoundingBox]:
+def extract_bounding_boxes(
+        profile: str,
+        region: str,
+        bucket_name: str,
+        file_name: str
+) -> list[BoundingBox]:
     """ Extract bounding boxes from check image
     
     Args:
@@ -79,7 +84,11 @@ def extract_bounding_boxes(profile, region, bucket_name, file_name) -> list[Boun
             boundingbox_list.append(bbox)
     return boundingbox_list
 
-def get_image(profile, bucket_name, file_name) -> Image:
+def get_image(
+        profile: str,
+        bucket_name: str,
+        file_name: str
+) -> Image:
     # Get the check which is stored in bucket_name
     session = boto3.Session(profile_name=profile)
     s3_connection = session.resource('s3')
@@ -94,7 +103,11 @@ def get_image(profile, bucket_name, file_name) -> Image:
 
     return image
     
-def merge_nearby_boxes(rects, max_center_distance, max_corner_distance):
+def merge_nearby_boxes(
+        rects: list[BoundingBox],
+        max_center_distance: int,
+        max_corner_distance: int
+) -> list[BoundingBox]:
     """
     Merge nearby bounding boxes in a list based on both center distance and distance between corners.
 
@@ -157,7 +170,7 @@ def merge_nearby_boxes(rects, max_center_distance, max_corner_distance):
 
     return merged_rects
 
-def merge_overlapping_boxes(boxes):
+def merge_overlapping_boxes(boxes: list[BoundingBox]) -> list[BoundingBox]:
     """
     Merge overlapping bounding boxes in a list.
 
@@ -219,21 +232,7 @@ def merge_overlapping_boxes(boxes):
 
     return merged_boxes
 
-"""
-
-Below are the parameters necessary to extract bounding boxes from a check.
-
-profile: profile name on Amazon Web Services
-region: region the check image is stored at
-bucket_name: name of bucket storing check image
-file_name: file name of the check image
-
-"""
-
-# profile = 'stevensegawa'
-# region = 'us-west-1'
-# bucket_name = 'aws-for-checks'
-# file_name = 'warped_IMG_1599.jpg'
+# Below are the parameters necessary to extract bounding boxes from a check.
 
 profile = 'christinayue'
 region = 'us-west-1'

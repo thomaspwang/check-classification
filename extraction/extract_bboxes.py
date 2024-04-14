@@ -4,7 +4,24 @@ import boto3
 import io
 from PIL import Image
 
-def extract_bounding_boxes(profile, region, bucket_name, file_name) -> list:
+AWS_BUCKET_NAME = 'katie-sofi-bucket'
+AWS_PROFILE_NAME = 'katiewang'
+AWS_REGION_NAME = 'us-west-1'
+
+@dataclass
+class BoundingBox:
+    # x and y represent the bottom left coordinate of the bounding box
+    x: int
+    y: int
+    width: int
+    height: int
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+def extract_bounding_boxes(profile, region, bucket_name, file_name) -> list[BoundingBox]:
     """ Extract bounding boxes from check image
     
     Args:
@@ -43,8 +60,6 @@ def extract_bounding_boxes(profile, region, bucket_name, file_name) -> list:
     blocks=response['Blocks']
     boundingbox_list = []
     width, height = image.size 
-    print("IMPORTANT:", width, height)   
-    print ('Detected Document Text')
     
     # Create image showing bounding box/polygon the detected lines/text
     for block in blocks:
@@ -64,11 +79,16 @@ def extract_bounding_boxes(profile, region, bucket_name, file_name) -> list:
                 y = block['Geometry']['BoundingBox']['Top'] * height
                 w = block['Geometry']['BoundingBox']['Width'] * width
                 h = block['Geometry']['BoundingBox']['Height'] * height
-                boundingbox_list += [(x, y, w, h)]
+                boundingbox_list += [BoundingBox(x, y, w, h)]
                 # draw=ImageDraw.Draw(image)
     return boundingbox_list
 
+
 def get_image(profile, bucket_name, file_name) -> Image:
+    """
+    Retrieves the check image from AWS bucket.
+
+    """
     # Get the check which is stored in bucket_name
     session = boto3.Session(profile_name=profile)
     s3_connection = session.resource('s3')

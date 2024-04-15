@@ -5,6 +5,14 @@ import io
 from PIL import Image
 from dataclasses import dataclass
 
+
+# Below are the parameters necessary to extract bounding boxes from a check.
+
+AWS_PROFILE_NAME = 'christinayue'
+AWS_REGION_NAME = 'us-west-1'
+AWS_BUCKET_NAME = 'aws-bboxes-checks'
+file_name = 'inputcheck.jpg'
+
 @dataclass
 class BoundingBox:
     """
@@ -38,35 +46,28 @@ class BoundingBox:
         return (self.x + self.width, self.y + self.height)
 
 def extract_bounding_boxes(
-        profile: str,
-        region: str,
-        bucket_name: str,
         file_name: str
 ) -> list[BoundingBox]:
     """ Extract bounding boxes from check image
     
     Args:
-        profile: profile name on Amazon Web Services
-        region: region the check image is stored at
-        bucket_name: name of bucket storing check image
         file_name: file name of the check image
 
     Returns:
         list[BoundingBox]: list of bounding boxes with coordinates and dimensions
     """
-    session = boto3.Session(profile_name=profile)
+    session = boto3.Session(profile_name = AWS_PROFILE_NAME)
     s3_connection = session.resource('s3')
-    client = session.client('textract', region_name=region)
-    bucket = bucket_name
+    client = session.client('textract', region_name = AWS_REGION_NAME)
     document = file_name
 
-    s3_object = s3_connection.Object(bucket, document)
+    s3_object = s3_connection.Object(AWS_BUCKET_NAME, document)
     s3_response = s3_object.get()
     stream = io.BytesIO(s3_response['Body'].read())
     image = Image.open(stream)
 
     response = client.detect_document_text(
-        Document={'S3Object': {'Bucket': bucket, 'Name': document}})
+        Document={'S3Object': {'Bucket': AWS_BUCKET_NAME, 'Name': document}})
     
     blocks = response['Blocks']
     boundingbox_list = []
@@ -85,18 +86,15 @@ def extract_bounding_boxes(
     return boundingbox_list
 
 def get_image(
-        profile: str,
-        bucket_name: str,
         file_name: str
 ) -> Image:
-    # Get the check which is stored in bucket_name
-    session = boto3.Session(profile_name=profile)
+    # Get the check stored in the bucket
+    session = boto3.Session(profile_name = AWS_PROFILE_NAME)
     s3_connection = session.resource('s3')
-    bucket = bucket_name
     document = file_name
 
-    # Get the document from S3  
-    s3_object = s3_connection.Object(bucket, document)
+    # Retrieving the check image from AWS bucket  
+    s3_object = s3_connection.Object(AWS_BUCKET_NAME, document)
     s3_response = s3_object.get()
     stream = io.BytesIO(s3_response['Body'].read())
     image=Image.open(stream)
@@ -232,19 +230,14 @@ def merge_overlapping_boxes(boxes: list[BoundingBox]) -> list[BoundingBox]:
 
     return merged_boxes
 
-# Below are the parameters necessary to extract bounding boxes from a check.
-
-profile = 'christinayue'
-region = 'us-west-1'
-bucket_name = 'aws-bboxes-checks'
-file_name = 'inputcheck.jpg'
 
 # Code to run the algorithm
-bucket_image = get_image(profile, bucket_name, file_name)
+bucket_image = get_image(file_name)
 image = cv2.cvtColor(np.array(bucket_image), cv2.COLOR_RGB2BGR)
 max_distance = 20
 max_corner = (int)(image.shape[0] * 0.02)
-bounding_boxes = extract_bounding_boxes(profile, region, bucket_name, file_name)
+bounding_boxes = extract_bounding_boxes(file_name)
+# Doesn't merge MICR boxes with the rest of the boxes
 micr_bounding_boxes = bounding_boxes[-2:]
 merged_rects = merge_nearby_boxes(bounding_boxes[:-2], max_distance, max_corner)
 overlapped_merged = merge_overlapping_boxes(merged_rects)

@@ -11,7 +11,7 @@ from dataclasses import dataclass
 AWS_PROFILE_NAME = 'christinayue'
 AWS_REGION_NAME = 'us-west-1'
 AWS_BUCKET_NAME = 'aws-bboxes-checks'
-file_name = 'inputcheck.jpg'
+TEST_FILE_NAME = 'inputcheck.jpg'
 
 @dataclass
 class BoundingBox:
@@ -72,8 +72,6 @@ def extract_bounding_boxes(
     blocks = response['Blocks']
     boundingbox_list = []
     width, height = image.size 
-    print("IMPORTANT:", width, height)   
-    print('Detected Document Text')
     
     for block in blocks:
         if block['BlockType'] == 'LINE':
@@ -102,7 +100,7 @@ def get_image(
     return image
     
 def merge_nearby_boxes(
-        rects: list[BoundingBox],
+        bboxes: list[BoundingBox],
         max_center_distance: int,
         max_corner_distance: int
 ) -> list[BoundingBox]:
@@ -110,7 +108,7 @@ def merge_nearby_boxes(
     Merge nearby bounding boxes in a list based on both center distance and distance between corners.
 
     Args:
-        rects: List of BoundingBox objects representing bounding boxes.
+        bboxes: List of BoundingBox objects representing bounding boxes.
         max_center_distance: Maximum center distance to consider for merging.
         max_corner_distance: Maximum distance between corners to consider for merging.
 
@@ -139,34 +137,34 @@ def merge_nearby_boxes(
 
         return min_distance
 
-    merged_rects = []
-    for rect in rects:
-        x, y, w, h = rect.x, rect.y, rect.width, rect.height
+    merged_bboxes = []
+    for bbox in bboxes:
+        x, y, w, h = bbox.x, bbox.y, bbox.width, bbox.height
         center_x = x + w // 2
         center_y = y + h // 2
 
         merged = False
-        for i, merged_rect in enumerate(merged_rects):
-            merged_x, merged_y, merged_w, merged_h = merged_rect.x, merged_rect.y, merged_rect.width, merged_rect.height
+        for i, merged_bbox in enumerate(merged_bboxes):
+            merged_x, merged_y, merged_w, merged_h = merged_bbox.x, merged_bbox.y, merged_bbox.width, merged_bbox.height
             merged_center_x = merged_x + merged_w // 2
             merged_center_y = merged_y + merged_h // 2
 
             center_distance = np.sqrt((center_x - merged_center_x)**2 + (center_y - merged_center_y)**2)
-            corner_distance_val = corner_distance(rect, merged_rect)
+            corner_distance_val = corner_distance(bbox, merged_bbox)
 
             if center_distance < max_center_distance or corner_distance_val < max_corner_distance:
                 new_x = min(x, merged_x)
                 new_y = min(y, merged_y)
                 new_w = max(x + w, merged_x + merged_w) - new_x
                 new_h = max(y + h, merged_y + merged_h) - new_y
-                merged_rects[i] = BoundingBox(new_x, new_y, new_w, new_h)
+                merged_bboxes[i] = BoundingBox(new_x, new_y, new_w, new_h)
                 merged = True
                 break
 
         if not merged:
-            merged_rects.append(rect)
+            merged_bboxes.append(bbox)
 
-    return merged_rects
+    return merged_bboxes
 
 def merge_overlapping_boxes(boxes: list[BoundingBox]) -> list[BoundingBox]:
     """
@@ -178,7 +176,7 @@ def merge_overlapping_boxes(boxes: list[BoundingBox]) -> list[BoundingBox]:
     Returns:
         List of merged BoundingBox objects.
     """
-    def calculate_iou(box1, box2):
+    def calculate_iou(box1, box2) -> float:
         """
         Calculate the Intersection over Union (IoU) of two bounding boxes.
 
@@ -230,41 +228,42 @@ def merge_overlapping_boxes(boxes: list[BoundingBox]) -> list[BoundingBox]:
 
     return merged_boxes
 
+# Code to extract and draw bounding boxes on TEST_FILE_NAME
+if __name__ == "__main__":
+    bucket_image = get_image(TEST_FILE_NAME)
+    image = cv2.cvtColor(np.array(bucket_image), cv2.COLOR_RGB2BGR)
+    max_distance = 20
+    max_corner = (int)(image.shape[0] * 0.02)
+    bounding_boxes = extract_bounding_boxes(TEST_FILE_NAME)
 
-# Code to run the algorithm
-bucket_image = get_image(file_name)
-image = cv2.cvtColor(np.array(bucket_image), cv2.COLOR_RGB2BGR)
-max_distance = 20
-max_corner = (int)(image.shape[0] * 0.02)
-bounding_boxes = extract_bounding_boxes(file_name)
-# Doesn't merge MICR boxes with the rest of the boxes
-micr_bounding_boxes = bounding_boxes[-2:]
-merged_rects = merge_nearby_boxes(bounding_boxes[:-2], max_distance, max_corner)
-overlapped_merged = merge_overlapping_boxes(merged_rects)
+    # Doesn't merge MICR boxes with the rest of the boxes
+    micr_bounding_boxes = bounding_boxes[-2:]
+    merged_bboxes = merge_nearby_boxes(bounding_boxes[:-2], max_distance, max_corner)
+    overlapped_merged = merge_overlapping_boxes(merged_bboxes)
 
-while overlapped_merged != merge_overlapping_boxes(overlapped_merged):
-    merged_rects = merged_rects + overlapped_merged
-    overlapped_merged = merge_overlapping_boxes(overlapped_merged)
+    while overlapped_merged != merge_overlapping_boxes(overlapped_merged):
+        merged_bboxes = merged_bboxes + overlapped_merged
+        overlapped_merged = merge_overlapping_boxes(overlapped_merged)
 
-# Draw merged rectangles on the image
-for rect in overlapped_merged:
-    # Updated to use the attributes directly instead of unpacking
-    x, y, w, h = rect.x, rect.y, rect.width, rect.height
-    cv2.rectangle(image, (int(x), int(y)), (int(x + w), int(y + h)), (0, 255, 0), 2)
+    # Draw merged rectangles on the image
+    for bbox in overlapped_merged:
+        # Updated to use the attributes directly instead of unpacking
+        x, y, w, h = bbox.x, bbox.y, bbox.width, bbox.height
+        cv2.rectangle(image, (int(x), int(y)), (int(x + w), int(y + h)), (0, 255, 0), 2)
 
-for rect in micr_bounding_boxes:
-    # Updated to use the attributes directly instead of unpacking
-    x, y, w, h = rect.x, rect.y, rect.width, rect.height
-    cv2.rectangle(image, (int(x), int(y)), (int(x + w), int(y + h)), (0, 255, 0), 2)
+    for bbox in micr_bounding_boxes:
+        # Updated to use the attributes directly instead of unpacking
+        x, y, w, h = bbox.x, bbox.y, bbox.width, bbox.height
+        cv2.rectangle(image, (int(x), int(y)), (int(x + w), int(y + h)), (0, 255, 0), 2)
 
-scale_percent = 50  # percent of original size
-width = int(image.shape[1] * scale_percent / 100)
-height = int(image.shape[0] * scale_percent / 100)
-dim = (width, height)
+    scale_percent = 50  # percent of original size
+    width = int(image.shape[1] * scale_percent / 100)
+    height = int(image.shape[0] * scale_percent / 100)
+    dim = (width, height)
 
-# Resize image
-resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
+    # Resize image
+    resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 
-cv2.imshow("Resized Image", resized)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+    cv2.imshow("Resized Image", resized)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()

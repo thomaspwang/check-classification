@@ -5,12 +5,13 @@ import io
 from PIL import Image
 from dataclasses import dataclass
 
-
-# Below are the parameters necessary to extract bounding boxes from a check.
-
+# Used for AWS textract and s3
 AWS_PROFILE_NAME = 'christinayue'
 AWS_REGION_NAME = 'us-west-1'
 AWS_BUCKET_NAME = 'aws-bboxes-checks'
+
+
+# Change this to the name of the file you want to demo
 TEST_FILE_NAME = 'inputcheck.jpg'
 
 @dataclass
@@ -228,7 +229,11 @@ def merge_overlapping_boxes(boxes: list[BoundingBox]) -> list[BoundingBox]:
 
     return merged_boxes
 
-# Code to extract and draw bounding boxes on TEST_FILE_NAME
+"""
+Main function to demonstrate the bounding box extraction.
+
+Edit the TEST_FILE_NAME variable to view bounding boxes being drawn on the image.
+"""
 if __name__ == "__main__":
     bucket_image = get_image(TEST_FILE_NAME)
     image = cv2.cvtColor(np.array(bucket_image), cv2.COLOR_RGB2BGR)

@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-=======
-from dataclasses import dataclass
-from enum import Enum
-from pathlib import Path
-from typing import List
-
->>>>>>> origin
 import cv2
 import numpy as np
 import boto3
@@ -13,16 +5,15 @@ import io
 from PIL import Image
 from dataclasses import dataclass
 
-<<<<<<< HEAD
 # Used for AWS textract and s3
 AWS_PROFILE_NAME = 'christinayue'
 AWS_REGION_NAME = 'us-west-1'
 AWS_BUCKET_NAME = 'aws-bboxes-checks'
 
-
 # Change this to the name of the file you want to demo
 TEST_FILE_NAME = 'inputcheck.jpg'
-=======
+
+
 class RegionType(Enum):
     """ Enum for check region type 
     

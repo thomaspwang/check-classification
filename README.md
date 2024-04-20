@@ -34,7 +34,7 @@ Install requirements with
 pip install -r requirements.txt
 ```
 
-<br> **Step 5** <br>
+<br> **Step 5 (BROKEN: NEED TO FIX, DON'T DO) ** <br>
 Install our project as a package in editable mode with
 ```
 pip install -e .

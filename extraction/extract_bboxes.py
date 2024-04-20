@@ -14,19 +14,6 @@ AWS_BUCKET_NAME = 'aws-bboxes-checks'
 TEST_FILE_NAME = 'inputcheck.jpg'
 
 
-class RegionType(Enum):
-    """ Enum for check region type 
-    
-    Example Usage:
-        >>> bounding_box = BoundingBox(0, 0, 100, 100, RegionType.AMOUNT)
-    """
-    DATE = 0
-    AMOUNT = 1
-    PAYEE = 2
-    MEMO = 3
-    OTHER = 4
->>>>>>> origin
-
 @dataclass
 class BoundingBox:
     """

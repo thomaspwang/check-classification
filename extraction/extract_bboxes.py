@@ -4,14 +4,16 @@ import boto3
 import io
 from PIL import Image
 from dataclasses import dataclass
+from pathlib import Path
+import base64
 
 # Used for AWS textract and s3
-AWS_PROFILE_NAME = 'christinayue'
+AWS_PROFILE_NAME = 'AssumeMoneyRiskEng'
 AWS_REGION_NAME = 'us-west-1'
-AWS_BUCKET_NAME = 'aws-bboxes-checks'
+AWS_BUCKET_NAME = ...
 
 # Change this to the name of the file you want to demo
-TEST_FILE_NAME = 'inputcheck.jpg'
+TEST_FILE_NAME = './data/mcd-test-1-front-images/mcd-test-1-front-1.jpg'
 
 
 @dataclass
@@ -31,28 +33,68 @@ class BoundingBox:
     height: int
 
     def top_left_corner(self):
-        """Return the top-left corner of the bounding box."""
         return (self.x, self.y)
 
     def top_right_corner(self):
-        """Return the top-right corner of the bounding box."""
         return (self.x + self.width, self.y)
 
     def bottom_left_corner(self):
-        """Return the bottom-left corner of the bounding box."""
         return (self.x, self.y + self.height)
 
     def bottom_right_corner(self):
-        """Return the bottom-right corner of the bounding box."""
         return (self.x + self.width, self.y + self.height)
 
-def extract_bounding_boxes(
-        file_name: str
+def extract_bounding_boxes_from_path(
+        file_path: Path
 ) -> list[BoundingBox]:
-    """ Extract bounding boxes from check image
+    """ Extracts the bounding boxes from a check image stored locally. 
+
+    Requires AWS_PROFILE_NAME and AWS_REGION_NAME to be set correctly.
     
     Args:
-        file_name: file name of the check image
+        file_path: File path of input image.
+
+    Returns:
+        A list of BoundingBox objects.
+    """
+    session = boto3.Session(profile_name=AWS_PROFILE_NAME)
+    client = session.client('textract', region_name=AWS_REGION_NAME)
+
+    width: int
+    height: int
+    base64_encoded_image: bytes
+    with file_path.open(mode="rb") as f:
+        image = Image.open(f)
+        width, height = image.size
+        base64_encoded_image = base64.b64encode(f.read())
+
+
+    response = client.detect_document_text(
+        Document={'Bytes': base64_encoded_image}
+    )
+    
+    blocks = response['Blocks']
+    boundingbox_list = []
+    
+    for block in blocks:
+        if block['BlockType'] == 'LINE':
+            x = int(block['Geometry']['BoundingBox']['Left'] * width)
+            y = int(block['Geometry']['BoundingBox']['Top'] * height)
+            w = int(block['Geometry']['BoundingBox']['Width'] * width)
+            h = int(block['Geometry']['BoundingBox']['Height'] * height)
+            bbox = BoundingBox(x, y, w, h)
+            boundingbox_list.append(bbox)
+    return boundingbox_list
+
+def extract_bounding_boxes_from_s3(
+        file_name: str
+) -> list[BoundingBox]:
+    """ Extract bounding boxes from check image stored in an S3 Bucket. 
+
+    Requires AWS_PROFILE_NAME, AWS_BUCKET_NAME, and AWS_REGION_NAME to be set correctly.
+    
+    Args:
+        file_name: file name of the check image in s3
 
     Returns:
         list[BoundingBox]: list of bounding boxes with coordinates and dimensions
@@ -235,11 +277,13 @@ Main function to demonstrate the bounding box extraction.
 Edit the TEST_FILE_NAME variable to view bounding boxes being drawn on the image.
 """
 if __name__ == "__main__":
-    bucket_image = get_image(TEST_FILE_NAME)
-    image = cv2.cvtColor(np.array(bucket_image), cv2.COLOR_RGB2BGR)
+    file_path = Path(TEST_FILE_NAME)
+    check_image = Image.open(file_path)
+
+    image = cv2.cvtColor(np.array(check_image), cv2.COLOR_RGB2BGR)
     max_distance = 20
     max_corner = (int)(image.shape[0] * 0.02)
-    bounding_boxes = extract_bounding_boxes(TEST_FILE_NAME)
+    bounding_boxes = extract_bounding_boxes_from_path(file_path)
 
     # Doesn't merge MICR boxes with the rest of the boxes
     micr_bounding_boxes = bounding_boxes[-2:]

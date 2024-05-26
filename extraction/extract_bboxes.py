@@ -1,3 +1,5 @@
+#TODO: Module docstring
+
 import cv2
 import numpy as np
 import boto3
@@ -7,13 +9,14 @@ from dataclasses import dataclass
 from pathlib import Path
 import base64
 
-# Used for AWS textract and s3
-AWS_PROFILE_NAME = 'AssumeMoneyRiskEng'
-AWS_REGION_NAME = 'us-west-1'
+# For AWS S3 and Textract
+AWS_PROFILE_NAME = 'thwang'
+AWS_REGION_NAME = 'us-west-2'
 AWS_BUCKET_NAME = ...
 
-# Change this to the name of the file you want to demo
-TEST_FILE_NAME = './data/mcd-test-1-front-images/mcd-test-1-front-1.jpg'
+# For when the script is run locally
+TEST_FILE_PATH = './test-image.jpg'
+OUTPUT_FILE_PATH = './test-image-out.jpg'
 
 
 @dataclass
@@ -45,7 +48,7 @@ class BoundingBox:
         return (self.x + self.width, self.y + self.height)
 
 def extract_bounding_boxes_from_path(
-        file_path: Path
+        img_path: Path
 ) -> list[BoundingBox]:
     """ Extracts the bounding boxes from a check image stored locally. 
 
@@ -60,18 +63,17 @@ def extract_bounding_boxes_from_path(
     session = boto3.Session(profile_name=AWS_PROFILE_NAME)
     client = session.client('textract', region_name=AWS_REGION_NAME)
 
-    width: int
-    height: int
-    base64_encoded_image: bytes
-    with file_path.open(mode="rb") as f:
-        image = Image.open(f)
-        width, height = image.size
-        base64_encoded_image = base64.b64encode(f.read())
+    image = Image.open(img_path)
+    width, height = image.size
+    with img_path.open(mode="rb") as f:
+        response = client.detect_document_text(
+            Document={'Bytes': f.read()}
+        )
 
 
-    response = client.detect_document_text(
-        Document={'Bytes': base64_encoded_image}
-    )
+    # response = client.detect_document_text(
+    #     Document={'Bytes': base64_encoded_image}
+    # )
     
     blocks = response['Blocks']
     boundingbox_list = []
@@ -129,6 +131,7 @@ def extract_bounding_boxes_from_s3(
 def get_image(
         file_name: str
 ) -> Image:
+    # TODO: Docstring
     # Get the check stored in the bucket
     session = boto3.Session(profile_name = AWS_PROFILE_NAME)
     s3_connection = session.resource('s3')
@@ -277,13 +280,13 @@ Main function to demonstrate the bounding box extraction.
 Edit the TEST_FILE_NAME variable to view bounding boxes being drawn on the image.
 """
 if __name__ == "__main__":
-    file_path = Path(TEST_FILE_NAME)
-    check_image = Image.open(file_path)
+    img_path = Path(TEST_FILE_PATH)
+    check_image = Image.open(img_path)
 
     image = cv2.cvtColor(np.array(check_image), cv2.COLOR_RGB2BGR)
     max_distance = 20
     max_corner = (int)(image.shape[0] * 0.02)
-    bounding_boxes = extract_bounding_boxes_from_path(file_path)
+    bounding_boxes = extract_bounding_boxes_from_path(img_path)
 
     # Doesn't merge MICR boxes with the rest of the boxes
     micr_bounding_boxes = bounding_boxes[-2:]
@@ -313,6 +316,6 @@ if __name__ == "__main__":
     # Resize image
     resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 
-    cv2.imshow("Resized Image", resized)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.imwrite(OUTPUT_FILE_PATH, resized)
+
+    print(f"Resized image saved to {OUTPUT_FILE_PATH}")

@@ -31,8 +31,7 @@ def crop_image(image_path: Path, bbox: BoundingBox):
         image = image.convert('RGB')
     x1, y1 = bbox.top_left_corner()
     x2, y2 = bbox.bottom_right_corner()
-    cropped_image = image.crop((x1, y1, x2, y2))
-    cropped_image.save(TEMPFILE_PATH)
+    return image.crop((x1, y1, x2, y2))
 
 
 def parse_handwriting(
@@ -54,7 +53,8 @@ def parse_handwriting_doctr(
         box : BoundingBox,
 ) -> str:
     """ Parse handwriting using DocTR model """
-    crop_image(img_path, box)
+    cropped_image = crop_image(img_path, box, TEMPFILE_PATH)
+    cropped_image.save(TEMPFILE_PATH)
     doc = DocumentFile.from_images(TEMPFILE_PATH)
     result = MODEL(doc)
     concatString = ""

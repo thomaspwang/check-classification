@@ -14,7 +14,9 @@ from extract_bboxes import (
 from extract_handwriting import (
     parse_handwriting,
     Mode,
+    crop_image
 )
+from PIL import Image
 import time
 from tqdm import tqdm
 
@@ -34,23 +36,22 @@ def is_treasury_check(img_path: Path, textract_client) -> bool:
 
     bounding_boxes = extract_bounding_boxes_from_path(img_path, textract_client)
 
-    for bbox in bounding_boxes:
+    for i, bbox in enumerate(bounding_boxes):
         data = parse_handwriting(img_path, bbox, EXTRACT_MODE).lower()
 
 
-        print(data)
+        print(i, data)
         if 'treasury' in data:
             return True
 
     return False
 
-
 if __name__ == "__main__":
     session = boto3.Session(profile_name=AWS_PROFILE_NAME)
     textract_client = session.client('textract', region_name=AWS_REGION_NAME)
     
-    file_path = Path(f"./data/images/mcd-test-4-front-{70}.jpg")
-    is_treasury_check(file_path, textract_client)
+    # file_path = Path(f"./data/images/mcd-test-4-front-{70}.jpg")
+    # is_treasury_check(file_path, textract_client)
 
     # num_total = len(TREASURY_CHECK_NUMS)
     # num_correct = 0
@@ -64,3 +65,18 @@ if __name__ == "__main__":
     # print(f"Accuracy: {num_correct / num_total}%")
     # print(f"")
 
+
+    for treasury_check_num in tqdm(TREASURY_CHECK_NUMS, desc="Cropping Treasury Bounding Boxes"):
+        img_path = Path(f"./data/images/mcd-test-4-front-{treasury_check_num}.jpg")
+
+        bounding_boxes = extract_bounding_boxes_from_path(img_path, textract_client)
+        treasury_box = bounding_boxes[0]
+
+        cropped_box = crop_image(img_path, treasury_box)
+
+        out_path = Path(f"./data/treasury_bbox/mcd-test-4-front-{treasury_check_num}.jpg")
+
+        cropped_box.save(out_path)
+
+
+        

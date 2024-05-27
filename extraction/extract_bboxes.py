@@ -69,11 +69,6 @@ def extract_bounding_boxes_from_path(
         response = client.detect_document_text(
             Document={'Bytes': f.read()}
         )
-
-
-    # response = client.detect_document_text(
-    #     Document={'Bytes': base64_encoded_image}
-    # )
     
     blocks = response['Blocks']
     boundingbox_list = []

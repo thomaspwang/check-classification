@@ -24,7 +24,8 @@ from extract_handwriting import (
 EXTRACT_MODE = Mode.DOC_TR  # TODO: Probably add as a command line input later
 
 def extract_data(
-        img_path: Path
+        img_path: Path,
+        merge_boxes: bool = False
 ) -> str:
     #TODO: Docstring
 
@@ -35,14 +36,18 @@ def extract_data(
     max_corner = int(image.shape[0] * 0.02)
 
     bounding_boxes = extract_bounding_boxes_from_path(img_path)
-    merged_bboxes = merge_nearby_boxes(bounding_boxes[:-2], max_distance, max_corner)
-    overlapped_merged = merge_overlapping_boxes(merged_bboxes)
 
-    while overlapped_merged != merge_overlapping_boxes(overlapped_merged):
-        merged_bboxes = merged_bboxes + overlapped_merged
-        overlapped_merged = merge_overlapping_boxes(overlapped_merged)
+    if merge_boxes:
+        merged_bboxes = merge_nearby_boxes(bounding_boxes[:-2], max_distance, max_corner)
+        overlapped_merged = merge_overlapping_boxes(merged_bboxes)
 
-    data = [parse_handwriting(img_path, bbox, EXTRACT_MODE) for bbox in overlapped_merged]
+        while overlapped_merged != merge_overlapping_boxes(overlapped_merged):
+            merged_bboxes = merged_bboxes + overlapped_merged
+            overlapped_merged = merge_overlapping_boxes(overlapped_merged)
+
+        bounding_boxes = overlapped_merged
+
+    data = [parse_handwriting(img_path, bbox, EXTRACT_MODE) for bbox in bounding_boxes]
 
     return data
 

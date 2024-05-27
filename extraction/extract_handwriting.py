@@ -16,7 +16,7 @@ import sys
 # TODO: Get LLaVa working for pip - or make a docker instance?
 
 TEMPFILE_PATH = "/tmp/tempfile.jpg"
-MODEL = ocr_predictor(pretrained=True)
+MODEL = (ocr_predictor(pretrained=True)).cuda()
 # LLAVA = LLaVA("liuhaotian/llava-v1.6-34b")
 PROMPT = "print the text in the image."
 

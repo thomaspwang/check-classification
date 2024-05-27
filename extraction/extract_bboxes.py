@@ -7,16 +7,14 @@ import io
 from PIL import Image
 from dataclasses import dataclass
 from pathlib import Path
-import base64
 
-# For AWS S3 and Textract
+
+# For when the script is run locally
 AWS_PROFILE_NAME = 'thwang'
 AWS_REGION_NAME = 'us-west-2'
 AWS_BUCKET_NAME = ...
-
-# For when the script is run locally
-TEST_FILE_PATH = './test-image.jpg'
-OUTPUT_FILE_PATH = './test-image-out.jpg'
+TEST_FILE_PATH = './data/images/mcd-test-4-front-98.jpg'
+OUTPUT_FILE_PATH = './test_out.jpg'
 
 
 @dataclass
@@ -48,25 +46,25 @@ class BoundingBox:
         return (self.x + self.width, self.y + self.height)
 
 def extract_bounding_boxes_from_path(
-        img_path: Path
+        img_path: Path,
+        textract_client,
 ) -> list[BoundingBox]:
     """ Extracts the bounding boxes from a check image stored locally. 
 
     Requires AWS_PROFILE_NAME and AWS_REGION_NAME to be set correctly.
     
     Args:
-        file_path: File path of input image.
+        img_path: File path of input image.
+        client: An AWS boto3 textract_client.
 
     Returns:
         A list of BoundingBox objects.
     """
-    session = boto3.Session(profile_name=AWS_PROFILE_NAME)
-    client = session.client('textract', region_name=AWS_REGION_NAME)
 
     image = Image.open(img_path)
     width, height = image.size
     with img_path.open(mode="rb") as f:
-        response = client.detect_document_text(
+        response = textract_client.detect_document_text(
             Document={'Bytes': f.read()}
         )
     
@@ -86,6 +84,7 @@ def extract_bounding_boxes_from_path(
 def extract_bounding_boxes_from_s3(
         file_name: str
 ) -> list[BoundingBox]:
+    # TODO: Refactor to be the same as above
     """ Extract bounding boxes from check image stored in an S3 Bucket. 
 
     Requires AWS_PROFILE_NAME, AWS_BUCKET_NAME, and AWS_REGION_NAME to be set correctly.
@@ -275,13 +274,16 @@ Main function to demonstrate the bounding box extraction.
 Edit the TEST_FILE_NAME variable to view bounding boxes being drawn on the image.
 """
 if __name__ == "__main__":
+    session = boto3.Session(profile_name=AWS_PROFILE_NAME)
+    textract_client = session.client('textract', region_name=AWS_REGION_NAME)
+
     img_path = Path(TEST_FILE_PATH)
     check_image = Image.open(img_path)
 
     image = cv2.cvtColor(np.array(check_image), cv2.COLOR_RGB2BGR)
     max_distance = 20
     max_corner = (int)(image.shape[0] * 0.02)
-    bounding_boxes = extract_bounding_boxes_from_path(img_path)
+    bounding_boxes = extract_bounding_boxes_from_path(img_path, textract_client)
 
     # Doesn't merge MICR boxes with the rest of the boxes
     micr_bounding_boxes = bounding_boxes[-2:]

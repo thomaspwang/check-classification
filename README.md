@@ -34,26 +34,12 @@ Install requirements with
 pip install -r requirements.txt
 ```
 
-<br> **Step 5 (BROKEN: NEED TO FIX, DON'T DO) ** <br>
-Install our project as a package in editable mode with
-```
-pip install -e .
-```
-This allows our root-level scripts to be importable as packages in our testing suite.
-
-<br><br>
-## Installing New Dependencies
-If you want to use a package that hasn't already been installed, activate your virtual environment (if it hasn't been already) and run
-```
-pip install <whatever package you want>
-```
-If the package will be used across our team, let Tommy and Jeremy know and then add that package to our `requirements.txt` by
-```
-pip freeze > requirements.txt
-```
-
 ## Things to note
+Even after installing `requirements.txt`, you still need to manually install these:
 
-## Running Tests (TO-DO)
+```
+pip install python-doctr
+pip install torch torchvision torchaudio
+```
 
 ## Folder Structure (TO-DO)

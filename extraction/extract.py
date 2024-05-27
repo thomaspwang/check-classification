@@ -8,7 +8,6 @@ in the extraction package.
 import argparse
 import cv2
 from pathlib import Path
-from PIL import Image
 import numpy as np
 from extract_bboxes import (
     BoundingBox, 
@@ -29,8 +28,7 @@ def extract_data(
 ) -> str:
     #TODO: Docstring
 
-    image = Image.open(img_path)
-    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    image = cv2.imread(str(img_path))
 
     max_distance = 20
     max_corner = int(image.shape[0] * 0.02)

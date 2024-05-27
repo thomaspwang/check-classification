@@ -13,7 +13,7 @@ from extract_bboxes import (
 )
 from extract_handwriting import (
     parse_handwriting,
-    Mode,
+    ExtractMode,
     crop_image
 )
 from PIL import Image
@@ -25,7 +25,7 @@ from tqdm import tqdm
 AWS_PROFILE_NAME = 'thwang'
 AWS_REGION_NAME = 'us-west-2'
 
-EXTRACT_MODE = Mode.DOC_TR 
+EXTRACT_MODE = ExtractMode.DOC_TR 
 
 TREASURY_CHECK_NUMS = [70,  98, 132, 155, 163, 236, 287, 313, 331, 357, 362, 390, 406, 415,
        426, 439, 446, 494, 524, 644, 653, 668, 670, 671, 737, 777, 802, 837,

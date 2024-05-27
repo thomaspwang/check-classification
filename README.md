@@ -4,7 +4,7 @@
 
 ## Initial Environment Setup
 
-You only need to do this **once**. You can check if you've completed the environment by checking that a `.venv/` file exists in your local repository. 
+You only need perform steps 1 through  4 **once**. You can check if you've completed the environment by checking that a `.venv/` file exists in your local repository. 
 
 <br> **Step 1** <br>
 Make sure you have an updated Python version with
@@ -34,12 +34,18 @@ Install requirements with
 pip install -r requirements.txt
 ```
 
-## Things to note
+<br> **Step 5** <br>
 Even after installing `requirements.txt`, you still need to manually install these:
 
 ```
 pip install python-doctr
 pip install torch torchvision torchaudio
 ```
+
+Note: We've found that we needed to do this on EC2 instances (ml.g5.12xlarge). 
+Note: `pip install torch torchvision torchaudio` assumes that your system has Cuda 12.1.
+
+<br> **Step 5** <br>
+TODO: Install LLaVA @jerli
 
 ## Folder Structure (TO-DO)

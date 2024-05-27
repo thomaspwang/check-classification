@@ -16,12 +16,13 @@ from extract_bboxes import (
     merge_overlapping_boxes,
 )
 from extract_handwriting import (
+    generate_doctr_model,
+    generate_LLaVA_model,
     parse_handwriting,
-    Mode,
+    ExtractMode,
 )
 import time
-
-EXTRACT_MODE = Mode.DOC_TR  # TODO: Probably add as a command line input later
+from typing import Any
 
 # AWS Session Config
 AWS_PROFILE_NAME = 'thwang'
@@ -31,7 +32,8 @@ AWS_REGION_NAME = 'us-west-2'
 def extract_data(
         img_path: Path,
         textract_client,
-        merge_boxes: bool = False
+        extract_mode: ExtractMode,
+        merge_boxes: bool = False,
 ) -> str:
     #TODO: Docstring
     start_time = time.time()
@@ -61,7 +63,13 @@ def extract_data(
     elapsed_2 = checkpoint_2 - checkpoint_1
     print(f"Bounding box merging finished in {elapsed_2:.2f} seconds")
 
-    data = [parse_handwriting(img_path, bbox, EXTRACT_MODE) for bbox in bounding_boxes]
+    model: Any
+    if extract_mode == ExtractMode.DOC_TR:
+        model = generate_doctr_model()
+    elif extract_mode == ExtractMode.LLAVA:
+        model = generate_LLaVA_model()
+
+    data = [parse_handwriting(img_path, bbox, EXTRACT_MODE, model) for bbox in bounding_boxes]
 
     checkpoint_3 = time.time()
     elapsed_3 = checkpoint_3 - checkpoint_2
@@ -71,20 +79,31 @@ def extract_data(
 
 
 if __name__ == "__main__":
+    """
+    Prints the output data for a given image and a specified model.
+    """
     # TODO: Improve cmd interface
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('img_path', type=str, help='TODO')
-    args = parser.parse_args()\
+    parser.add_argument('img_path', type=str, help='File path containing the image.')
+    parser.add_argument('-m', '--model', choices=['llava', 'doctr'], required=True, help="Specify 'llava' or 'doctr' as the model to use.")
+    args = parser.parse_args()
     
     img_path: Path = Path(args.img_path)
+
+    selected_mode: ExtractMode
+    match args.model:
+        case 'llava':
+            selected_mode = ExtractMode.LLAVA
+        case 'doctr':
+            selected_mode = ExtractMode.DOC_TR
 
     print(f"Extracting data from {img_path}")
 
     session = boto3.Session(profile_name=AWS_PROFILE_NAME)
     textract_client = session.client('textract', region_name=AWS_REGION_NAME)
     
-    data = extract_data(img_path, textract_client)
+    data = extract_data(img_path, textract_client, selected_mode)
 
     print("Done. Extracted data:\n")
     print(data)

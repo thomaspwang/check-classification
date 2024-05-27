@@ -9,7 +9,6 @@ import argparse
 import boto3
 import cv2
 from pathlib import Path
-from PIL import Image
 import numpy as np
 from extract_bboxes import ( 
     extract_bounding_boxes_from_path,
@@ -37,8 +36,7 @@ def extract_data(
     #TODO: Docstring
     start_time = time.time()
 
-    image = Image.open(img_path)
-    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    image = cv2.imread(str(img_path))
 
     max_distance = 20
     max_corner = int(image.shape[0] * 0.02)

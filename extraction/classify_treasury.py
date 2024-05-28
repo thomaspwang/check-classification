@@ -12,6 +12,7 @@ from extract_bboxes import (
     extract_bounding_boxes_from_path,
 )
 from extract_handwriting import (
+    generate_LLaVA_model,
     parse_handwriting,
     ExtractMode,
 )
@@ -20,63 +21,38 @@ from PIL import Image
 import time
 from tqdm import tqdm
 
-
-# AWS Session Config
-AWS_PROFILE_NAME = 'thwang'
-AWS_REGION_NAME = 'us-west-2'
-
-EXTRACT_MODE = ExtractMode.DOC_TR 
+EXTRACT_MODE = ExtractMode.LLAVA
 
 TREASURY_CHECK_NUMS = [70,  98, 132, 155, 163, 236, 287, 313, 331, 357, 362, 390, 406, 415,
        426, 439, 446, 494, 524, 644, 653, 668, 670, 671, 737, 777, 802, 837,
        847, 848, 858, 870, 951, 963, 967, 969]
 
-def is_treasury_check(img_path: Path, textract_client) -> bool:
-    #TODO: Docstring
+def is_treasury_check(img_path: Path, model: any) -> bool:
+    # Uses LLAVA to see if UNITED STATES TREASURY is present in the check.
 
-    bounding_boxes = extract_bounding_boxes_from_path(img_path, textract_client)
-
-    for i, bbox in enumerate(bounding_boxes):
-        data = parse_handwriting(img_path, bbox, EXTRACT_MODE).lower()
-
-
-        print(i, data)
-        if 'treasury' in data:
-            return True
-
-    return False
+    PROMPT = "Is the word \"UNITED STATES TREASURY\" written in a Gothic / Old English font present on this check? Only answer one word: True or False."
+    output = parse_handwriting(img_path, None, EXTRACT_MODE, model, PROMPT)
+    if output.upper() == "TRUE":
+        return True
+    elif output.upper() == "FALSE":
+        return False
+    else:
+        raise Exception(output)
 
 if __name__ == "__main__":
-    session = boto3.Session(profile_name=AWS_PROFILE_NAME)
-    textract_client = session.client('textract', region_name=AWS_REGION_NAME)
-    
-    # file_path = Path(f"./data/images/mcd-test-4-front-{70}.jpg")
-    # is_treasury_check(file_path, textract_client)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('dataset_folder', type=str, help='Folder path of dataset 4.')
+    args = parser.parse_args()
 
-    # num_total = len(TREASURY_CHECK_NUMS)
-    # num_correct = 0
+    num_total = len(TREASURY_CHECK_NUMS)
+    num_correct = 0
 
-    # for treasury_check_num in tqdm(TREASURY_CHECK_NUMS, desc="Processing Checks"):
-    #     file_path = Path(f"./data/images/mcd-test-4-front-{treasury_check_num}.jpg")
+    model = generate_LLaVA_model()
+    for treasury_check_num in tqdm(TREASURY_CHECK_NUMS, desc="Processing Treasury Checks"):
+        file_path = Path(f"{args.dataset_folder}/mcd-test-4-front-{treasury_check_num}.jpg")
 
-    #     if is_treasury_check(file_path, textract_client):
-    #         num_correct += 1
+        if is_treasury_check(file_path, model):
+            num_correct += 1
 
-    # print(f"Accuracy: {num_correct / num_total}%")
-    # print(f"")
-
-
-    for treasury_check_num in tqdm(TREASURY_CHECK_NUMS, desc="Cropping Treasury Bounding Boxes"):
-        img_path = Path(f"./data/images/mcd-test-4-front-{treasury_check_num}.jpg")
-
-        bounding_boxes = extract_bounding_boxes_from_path(img_path, textract_client)
-        treasury_box = bounding_boxes[0]
-
-        cropped_box = crop_image(img_path, treasury_box)
-
-        out_path = Path(f"./data/treasury_bbox/mcd-test-4-front-{treasury_check_num}.jpg")
-
-        cropped_box.save(out_path)
-
-
-        
+    print(f"Accuracy: {num_correct / num_total * 100}%")
+    print(f"")

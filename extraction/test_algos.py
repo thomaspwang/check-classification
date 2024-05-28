@@ -41,8 +41,20 @@ def LLAVA_amount_and_name(file_path, headers):
                 row[headers.index(label)] = parts.pop(0)
     return row
 
+def LLAVA_treasury(file_path, headers):
+    PROMPT = "Is the word \"UNITED STATES TREASURY\" written in a Gothic / Old English font present on this check? Only answer one word: True or False."
+    output = parse_handwriting(Path(file_path), None, ExtractMode.LLAVA, model, PROMPT)
+    if output.upper() == "TRUE":
+        return ["TreasuryCheck"]
+    elif output.upper() == "FALSE":
+        return ["Check"]
+    else:
+        print("check processing error")
+        return ["NA"]
+
 class Strategy(Enum):
     LLAVA_amount_and_name = "LLAVA_amount_and_name"
+    LLAVA_treasury = "LLAVA_treasury"
 
 # processes check images
 def analyzeChecks(dataset_path, out_file, strategy_to_eval, headers) -> int:
@@ -78,8 +90,6 @@ def analyzeChecks(dataset_path, out_file, strategy_to_eval, headers) -> int:
 
             row = strategy_to_eval(file_path, headers)
             csv_writer.writerow(row)
-            if counter > 3:
-                exit(0)
         return counter
 
 
@@ -97,6 +107,9 @@ if __name__ == "__main__":
         case Strategy.LLAVA_amount_and_name:
             headers = ["Check Amount", "Payer First Name", "Payer Last Name"]
             fn_to_eval = LLAVA_amount_and_name
+        case Strategy.LLAVA_treasury:
+            headers = ["Check Type"]
+            fn_to_eval = LLAVA_treasury
         case _:
             raise ValueError(f"Invalid strategy: {args.strategy}")
 

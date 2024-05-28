@@ -38,11 +38,6 @@ def extract_data(
     #TODO: Docstring
     start_time = time.time()
 
-    image = cv2.imread(str(img_path))
-
-    max_distance = 20
-    max_corner = int(image.shape[0] * 0.02)
-
     bounding_boxes = extract_bounding_boxes_from_path(img_path, textract_client)
 
     checkpoint_1 = time.time()
@@ -50,6 +45,10 @@ def extract_data(
     print(f"Bounding box extraction finished in {elapsed_1:.2f} seconds")
 
     if merge_boxes:
+        image = cv2.imread(str(img_path))
+        max_distance = 20
+        max_corner = int(image.shape[0] * 0.02)
+
         merged_bboxes = merge_nearby_boxes(bounding_boxes[:-2], max_distance, max_corner)
         overlapped_merged = merge_overlapping_boxes(merged_bboxes)
 

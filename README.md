@@ -35,7 +35,7 @@ pip install -r requirements.txt
 ```
 
 <br> **Step 5** <br>
-Even after installing `requirements.txt`, you still need to manually install these:
+Even after installing `requirements.txt`, you may need need to manually install these:
 
 ```
 pip install python-doctr

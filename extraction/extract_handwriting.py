@@ -21,7 +21,7 @@ TEMPFILE_PATH = "/tmp/tempfile.jpg"
 
 class ExtractMode(Enum):
     DOC_TR = "DocTR"
-    LLAVA = "LLAVA"
+    LLAVA = "LLaVA"
 
 def parse_handwriting(
         img_path: Path,

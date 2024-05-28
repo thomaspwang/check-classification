@@ -1,5 +1,34 @@
-#TODO: Module docstring
+"""
+Module for extracting and visualizing bounding boxes from a check image using AWS Textract.
 
+This script processes a check image, extracts bounding boxes using AWS Textract, 
+optionally merges nearby and overlapping bounding boxes, and saves the resulting 
+image with bounding boxes drawn on it.
+
+Usage:
+    python extract_bboxes.py <input_image_path> <output_image_path>
+
+Example:
+    python extract_bboxes.py data/mcd-test-3-front-images/mcd-test-3-front-93.jpg results/resized_image.jpg
+
+
+Functions:
+    extract_bounding_boxes_from_path(img_path: Path, textract_client) -> list[BoundingBox]:
+        Extracts bounding boxes from a check image stored locally.
+
+    extract_bounding_boxes_from_s3(file_name: str, textract_client, s3_resource) -> list[BoundingBox]:
+        Extracts bounding boxes from a check image stored in an S3 bucket.
+
+        TODO: Update? Probably is deprecated
+
+Classes:
+    BoundingBox:
+        Represents a rectangular bounding box with coordinates and dimensions.
+
+To run the script, ensure that AWS credentials are configured correctly.
+"""
+
+import argparse
 import cv2
 import numpy as np
 import boto3
@@ -13,9 +42,6 @@ from pathlib import Path
 AWS_PROFILE_NAME = 'thwang'
 AWS_REGION_NAME = 'us-west-2'
 AWS_BUCKET_NAME = ...
-TEST_FILE_PATH = './data/mcd-test-3-front-images/mcd-test-3-front-8.jpg'
-OUTPUT_FILE_PATH = './test_out.jpg'
-
 
 @dataclass
 class BoundingBox:
@@ -289,13 +315,21 @@ if __name__ == "__main__":
 
     TODO: Input / output command line args
     """
+    parser = argparse.ArgumentParser(description="Demonstrate bounding box extraction by displaying bounding boxes on a specific check.")
+    parser.add_argument('input', type=str, help='Path to the input check image.')
+    parser.add_argument('output', type=str, help='Path to save the output image with bounding boxes.')
+
+    args = parser.parse_args()
+    input_image_path = Path(args.input)
+    output_image_path = Path(args.output)
+
     session = boto3.Session(profile_name=AWS_PROFILE_NAME)
     textract_client = session.client('textract', region_name=AWS_REGION_NAME)
 
-    image = cv2.imread(TEST_FILE_PATH)
+    image = cv2.imread(str(input_image_path))
     max_distance = 20
     max_corner = (int)(image.shape[0] * 0.02)
-    bounding_boxes = extract_bounding_boxes_from_path(Path(TEST_FILE_PATH), textract_client)
+    bounding_boxes = extract_bounding_boxes_from_path(Path(input_image_path), textract_client)
 
     # Doesn't merge MICR boxes with the rest of the boxes
     micr_bounding_boxes = bounding_boxes[-2:]
@@ -325,6 +359,6 @@ if __name__ == "__main__":
     # Resize image
     resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 
-    cv2.imwrite(OUTPUT_FILE_PATH, resized)
+    cv2.imwrite(str(output_image_path), resized)
 
-    print(f"Resized image saved to {OUTPUT_FILE_PATH}")
+    print(f"Resized image saved to {output_image_path}")

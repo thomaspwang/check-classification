@@ -1,3 +1,16 @@
+"""
+Module for extracting MICR (Magnetic Ink Character Recognition) data from check images using AWS Textract.
+
+This script processes a check image, extracts bounding boxes using AWS Textract, merges the relevant bounding boxes, 
+and then extracts the MICR data (routing number, account number, and check number) from the merged bounding box.
+
+Usage:
+    python extract_micr.py <image_path>
+
+Example:
+    python extract_micr.py data/mcd-test-3-front-images/mcd-test-3-front-93.jpg
+"""
+
 import boto3
 from dataclasses import dataclass
 from enum import Enum
@@ -41,7 +54,7 @@ def extract_micr_data(
     
     Args:
         image_path (Path): Path to check image
-        client: An AWS boto3 textract_client.
+        textract_client: An AWS boto3 textract_client.
     
     Returns:
         MICRInfo: Class with the three fields contained in the MICR data
@@ -99,12 +112,10 @@ def parse_micr_string(micr_string: str) -> MICRData:
     parts = cleaned_string.split(' ')
     
     if len(parts) != 3:
-        print(parts)
         raise MICRExtractionError(
             f"`{micr_string}`: MICR string must contain exactly three parts separated by spaces after removing MICR symbols."
         )
     
-
     routing_number = parts[0]
     account_number = parts[1]
     check_number = parts[2]
@@ -130,5 +141,5 @@ if __name__ == "__main__":
     # Call the function to extract bounding boxes
     micr_info = extract_micr_data(image_path, textract_client)
     print(micr_info)
-    print(hash(micr_info))
+
     

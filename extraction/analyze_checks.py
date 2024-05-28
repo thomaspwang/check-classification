@@ -94,10 +94,14 @@ def textract_micr(
     """
     try:
         micr_data: MICRData = extract_micr_data(image_path, textract_client)
-        return [micr_data.check_number, micr_data.account_number, micr_data.routing_number]
-    
+        micr_output = [micr_data.check_number, micr_data.account_number, micr_data.routing_number]
+
     except MICRExtractionError:
-        return ["Error", "Error", "Error"]
+        return ["NA", "NA", "NA"]
+
+    # in the given labels, leading zeros are removed.
+    # This is outside the try catch as we want to see the exception if we are not able to cast the output to an int.
+    return [int(number) for number in micr_output]
 
 def LLAVA_treasury(
         file_path: Path, 
@@ -202,7 +206,7 @@ if __name__ == "__main__":
     print("Average Seconds per Inference: ", elapsed_time.total_seconds() / num_checks_processed)
     seconds_per_inference = elapsed_time.total_seconds() / num_checks_processed
 
-    if args.strategy == Strategy.LLAVA_AMOUNT_AND_NAME:
+    if args.strategy in [Strategy.LLAVA_AMOUNT_AND_NAME, Strategy.LLAVA_treasury]:
         print("Cost per Inference in USD (MACHIN): ", seconds_per_inference/(60*60) * HOURLY_COST)
 
     print(f"Writing results to {outfile_path}")

@@ -67,7 +67,7 @@ def extract_bounding_boxes_from_path(
         response = textract_client.detect_document_text(
             Document={'Bytes': f.read()}
         )
-    
+    print(response)
     blocks = response['Blocks']
     boundingbox_list = []
     
@@ -80,6 +80,38 @@ def extract_bounding_boxes_from_path(
             bbox = BoundingBox(x, y, w, h)
             boundingbox_list.append(bbox)
     return boundingbox_list
+
+def textdump_from_path(
+        img_path: Path,
+        textract_client,
+) -> list[BoundingBox]:
+    """ Dumps text from a check image stored locally. 
+
+    Requires AWS_PROFILE_NAME and AWS_REGION_NAME to be set correctly.
+    
+    Args:
+        img_path: File path of input image.
+        client: An AWS boto3 textract_client.
+
+    Returns:
+        A list of BoundingBox objects.
+    """
+
+    image = Image.open(img_path)
+    width, height = image.size
+    with img_path.open(mode="rb") as f:
+        response = textract_client.detect_document_text(
+            Document={'Bytes': f.read()}
+        )
+    
+    blocks = response['Blocks']
+    text_lines = []
+    
+    for block in blocks:
+        if block['BlockType'] == 'LINE':
+            text_lines.append(block['Text'])
+
+    return text_lines
 
 def extract_bounding_boxes_from_s3(
         file_name: str

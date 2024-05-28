@@ -24,6 +24,8 @@ class ExtractMode(Enum):
 
 def crop_image(image_path: Path, bbox: BoundingBox):
     image = Image.open(image_path)
+    if bbox is None:
+        return image
     if image.mode == 'RGBA':
         image = image.convert('RGB')
     x1, y1 = bbox.top_left_corner()
@@ -49,7 +51,7 @@ def parse_handwriting(
         
         case ExtractMode.LLAVA:
             assert isinstance(model, LLaVA)
-            return parse_handwriting_llava(mode, img_path, box)
+            return parse_handwriting_llava(mode, img_path, box, prompt)
         
         case _:
             raise ValueError(f"Invalid mode: {mode}")

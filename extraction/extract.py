@@ -69,7 +69,7 @@ def extract_data(
     elif extract_mode == ExtractMode.LLAVA:
         model = generate_LLaVA_model()
 
-    data = [parse_handwriting(img_path, bbox, EXTRACT_MODE, model) for bbox in bounding_boxes]
+    data = [parse_handwriting(img_path, bbox, extract_mode, model) for bbox in bounding_boxes]
 
     checkpoint_3 = time.time()
     elapsed_3 = checkpoint_3 - checkpoint_2

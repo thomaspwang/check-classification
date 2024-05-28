@@ -28,15 +28,24 @@ textract_client = session.client('textract', region_name=AWS_REGION_NAME)
 
 model = generate_LLaVA_model()
 
-def LLAVA_amount_and_name(file_path):
+def LLAVA_amount_and_name(file_path, headers):
     PROMPT = "Scan the check and list only the following information in key:value form separated by newlines: Check Amount, Payer First Name, Payer Last Name. For each piece of information not present in the check, return \"NA\" as the value. The Payer Name is located in printed text at the top left corner of the check. DO NOT use the Payee name which is handwritten in the center of the check. Validate the Check Amount by comparing the handwritten amount with the digits on the right side of the check. "
-    return parse_handwriting(Path(file_path), None, ExtractMode.LLAVA, model, PROMPT)
+    headers = ["Check Amount", "Payer First Name", "Payer Last Name"]
+    output = parse_handwriting(Path(file_path), None, ExtractMode.LLAVA, model, PROMPT)
+    row = ["NA"]*len(headers)
+    parts = [part for segment in output.split("\n") for part in segment.split(": ")]
+    while(len(parts) > 0):
+        label = parts.pop(0)
+        if label in headers:
+            if len(parts) > 0 and parts[0] not in headers:
+                row[headers.index(label)] = parts.pop(0)
+    return row
 
 class Strategy(Enum):
     LLAVA_amount_and_name = "LLAVA_amount_and_name"
 
 # processes check images
-def processCheck(dataset_path, labels, out_file, strategy_to_eval, headers) -> int:
+def analyzeChecks(dataset_path, out_file, strategy_to_eval, headers) -> int:
 
     with open(out_file, 'w', newline='') as csv_file:
         # Create a CSV writer object
@@ -65,18 +74,13 @@ def processCheck(dataset_path, labels, out_file, strategy_to_eval, headers) -> i
             counter += 1
             if counter % 50 == 0:
                 print(counter)
+            # todo: add nice tqdm progress bar
 
-            output = strategy_to_eval(file_path)
-            row = ["NA"]*len(headers)
-            parts = [part for segment in output.split("\n") for part in segment.split(": ")]
-            while(len(parts) > 0):
-                label = parts.pop(0)
-                if label in headers:
-                    if len(parts) > 0 and parts[0] not in headers:
-                        row[headers.index(label)] = parts.pop(0)
+            row = strategy_to_eval(file_path, headers)
             csv_writer.writerow(row)
+            if counter > 3:
+                exit(0)
         return counter
-
 
 
 if __name__ == "__main__":
@@ -84,7 +88,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('dataset_path', type=str, help='TODO')
-    parser.add_argument('labels', type=str, help='TODO')
     parser.add_argument('out_file', type=str, help='TODO')
     parser.add_argument('strategy', type=Strategy, choices=Strategy, help='Choose a strategy')
 
@@ -99,7 +102,7 @@ if __name__ == "__main__":
 
     start_time = datetime.now()
     print("Current time:", start_time)
-    numChecksProcessed = processCheck(args.dataset_path, args.labels, args.out_file, fn_to_eval, headers)
+    numChecksProcessed = analyzeChecks(args.dataset_path, args.out_file, fn_to_eval, headers)
     current_time = datetime.now()
     elapsed_time = current_time-start_time
     print("Elapsed time: ", elapsed_time)

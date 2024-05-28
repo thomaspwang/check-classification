@@ -2,6 +2,8 @@ import argparse
 import csv
 import os
 
+# TODO: Rename this camelcase garbage
+
 def calculate_edit_distance(s1, s2):
     # Initialize a 2D array to store edit distances
     dp = [[0] * (len(s2) + 1) for _ in range(len(s1) + 1)]

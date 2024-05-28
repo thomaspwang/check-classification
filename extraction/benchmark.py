@@ -75,8 +75,6 @@ def processCheck(dataset_path, labels, out_file, strategy_to_eval, headers) -> i
                     if len(parts) > 0 and parts[0] not in headers:
                         row[headers.index(label)] = parts.pop(0)
             csv_writer.writerow(row)
-            if counter > 3:
-                exit(0)
         return counter
 
 

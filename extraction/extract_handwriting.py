@@ -24,10 +24,10 @@ class ExtractMode(Enum):
 
 def crop_image(image_path: Path, bbox: BoundingBox):
     image = Image.open(image_path)
-    if bbox is None:
-        return image
     if image.mode == 'RGBA':
         image = image.convert('RGB')
+    if bbox is None:
+        return image
     x1, y1 = bbox.top_left_corner()
     x2, y2 = bbox.bottom_right_corner()
     return image.crop((x1, y1, x2, y2))

@@ -26,11 +26,11 @@ session = boto3.Session(profile_name=AWS_PROFILE_NAME)
 textract_client = session.client('textract', region_name=AWS_REGION_NAME)
 
 model = generate_LLaVA_model()
-PROMPT = "Scan the check and list only the following information in key:value form separated by newlines: Check Number, Check Amount, Payer First Name, Payer Last Name, Payer Routing Number, Payer Account Number. For your information, the Check Number is typically less than ten thousand and is at the top right of the check. The Routing Number is at the bottom left of the check and is at least nine digits long, and afterwards is the Payer Account Number which is also at least nine digits long. Supplement your response with text extracted by an OCR engine from the check: "
+PROMPT = "Scan the check and list only the following information in key:value form separated by newlines: Check Amount, Payer First Name, Payer Last Name. For each piece of information not present in the check, return \"NA\" as the value. The Payer Name is located in printed text at the top left corner of the check. DO NOT use the Payee name which is handwritten in the center of the check. Validate the Check Amount by comparing the handwritten amount with the digits on the right side of the check. "
 
 # processes check images
 def processCheck(dataset_path, labels, out_file) -> int:
-    headers = ["Check Number", "Check Amount", "Payer First Name", "Payer Last Name", "Payer Routing Number", "Payer Account Number"]
+    headers = ["Check Amount", "Payer First Name", "Payer Last Name"]
 
     with open(out_file, 'w', newline='') as csv_file:
         # Create a CSV writer object
@@ -63,32 +63,22 @@ def processCheck(dataset_path, labels, out_file) -> int:
             out = parse_handwriting(Path(file_path), None, ExtractMode.LLAVA, model, PROMPT + " ".join(textdump))
             if (counter %100 == 3 or counter %100 == 4):
                 print(out)
-            row = ["NA","NA","NA","NA","NA","NA"]
+            row = ["NA","NA","NA"]
             parts = [part for segment in out.split("\n") for part in segment.split(": ")]
             #print(parts)
             while(len(parts) > 0):
                 label = parts.pop(0)
-                print(label)
-                if label == "Check Number":
+                if label == "Check Amount":
                     if len(parts) > 0 and parts[0] not in headers:
                         row[0] = parts.pop(0)
-                elif label == "Check Amount":
-                    if len(parts) > 0 and parts[0] not in headers:
-                        row[1] = parts.pop(0)
-                        row[1] = row[1].replace("$", "")
+                        row[0] = row[0].replace("$", "")
 
                 elif label == "Payer First Name":
                     if len(parts) > 0 and parts[0] not in headers:
-                        row[2] = parts.pop(0)
+                        row[1] = parts.pop(0)
                 elif label == "Payer Last Name":
                     if len(parts) > 0 and parts[0] not in headers:
-                        row[3] = parts.pop(0)
-                elif label == "Payer Routing Number":
-                    if len(parts) > 0 and parts[0] not in headers:
-                        row[4] = parts.pop(0)
-                elif label == "Payer Account Number":
-                    if len(parts) > 0 and parts[0] not in headers:
-                        row[5] = parts.pop(0)
+                        row[2] = parts.pop(0)
             csv_writer.writerow(row)
         return counter
 

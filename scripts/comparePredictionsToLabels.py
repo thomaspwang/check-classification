@@ -1,5 +1,6 @@
-import csv
 import argparse
+import csv
+import os
 
 def calculate_edit_distance(s1, s2):
     # Initialize a 2D array to store edit distances
@@ -35,11 +36,28 @@ def remove_extra_columns(predictions, labels):
     with open(labels, 'r') as file:
         reader = csv.DictReader(file)
         data2 = [{header: row[header] for header in headers2 if header not in columns_to_remove} for row in reader]
-    
+
     # TODO: reorder columns in labels
     return data2
 
-def calculate_average_edit_distance(predictions, labels, verbose):
+def remove_missing_rows(dataset_folder, labels):
+    def comparator(file_string):
+        try:
+            return int(file_string[17:-4])
+        except:
+            # arbitrary large number to kick weird files to the end.
+            return 100000000
+
+    files = os.listdir(dataset_folder)
+    new_labels = []
+    for file_name in sorted(files, key=comparator):
+        try:
+            new_labels.append(labels[int(file_name[17:-4])-1])
+        except:
+            pass
+    return new_labels
+
+def calculate_average_edit_distance(dataset_folder, predictions, labels, verbose):
     skip_idxs = []
     with open(predictions, 'r') as file:
         reader = csv.reader(file)
@@ -51,6 +69,9 @@ def calculate_average_edit_distance(predictions, labels, verbose):
 
     labelData = remove_extra_columns(predictions, labels)
 
+    # skip rows of files not present in dataset. This only applies to partial datasets
+    labelData = remove_missing_rows(dataset_folder, labelData)
+    
     # Dictionary to store average edit distance for each column
     avg_edit_distance = {header: 0 for header in headers}
     counts = {header: 0 for header in headers}
@@ -114,6 +135,7 @@ def calculate_average_edit_distance(predictions, labels, verbose):
 if __name__ == "__main__":
     # Must be predictions, then labels; labels may be a superset of predictions.
     parser = argparse.ArgumentParser()
+    parser.add_argument('dataset_folder', type=str, help='TODO')
     parser.add_argument('predictions', type=str, help='TODO')
     parser.add_argument('labels', type=str, help='TODO')
     parser.add_argument('--verbose', action='store_true', help='Set the flag to True')
@@ -123,7 +145,8 @@ if __name__ == "__main__":
     #PREDICTIONS = "LLaVA_Benchmark-v1.6.csv"
     # characters to remove from check amount
     CHARS_TO_REMOVE = "$,"
-    avg_edit_distance, accuracy, missing_reads, total_rows, skip_idxs = calculate_average_edit_distance(args.predictions, args.labels, args.verbose)
+    avg_edit_distance, accuracy, missing_reads, total_rows, skip_idxs = \
+        calculate_average_edit_distance(args.dataset_folder, args.predictions, args.labels, args.verbose)
     print("Average Edit Distance for each column:")
     for header, distance in avg_edit_distance.items():
         print(f"{header}: {distance}")

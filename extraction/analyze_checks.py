@@ -59,6 +59,7 @@ class Strategy(Enum):
     """
     LLAVA_AMOUNT_AND_NAME = "LLAVA_AMOUNT_AND_NAME"
     TEXTRACT_MICR = "TEXTRACT_MICR"
+    LLAVA_treasury = "LLAVA_treasury"
 
 
 def LLaVA_amount_and_name(
@@ -98,6 +99,20 @@ def textract_micr(
     except MICRExtractionError:
         return ["Error", "Error", "Error"]
 
+def LLAVA_treasury(
+        file_path: Path, 
+        headers: list[str], 
+        model: Any
+):
+    PROMPT = "Is the word \"UNITED STATES TREASURY\" written in a Gothic / Old English font present on this check? Only answer one word: True or False."
+    output = parse_handwriting(Path(file_path), None, ExtractMode.LLAVA, model, PROMPT)
+    if output.upper() == "TRUE":
+        return ["TreasuryCheck"]
+    elif output.upper() == "FALSE":
+        return ["Check"]
+    else:
+        print("check processing error")
+        return ["NA"]
 
 # processes check images
 def analyze_checks(
@@ -168,6 +183,11 @@ if __name__ == "__main__":
             headers = ["Check Number", "Payer Account Number", "Payer Routing Number"]
             inference_function = textract_micr
             model = textract_client
+
+        case Strategy.LLAVA_treasury:
+            headers = ["Check Type"]
+            fn_to_eval = LLAVA_treasury
+            model = generate_LLaVA_model()
 
         case _:
             raise ValueError(f"Invalid strategy: {args.strategy}")

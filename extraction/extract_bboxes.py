@@ -285,9 +285,9 @@ def merge_overlapping_boxes(boxes: list[BoundingBox]) -> list[BoundingBox]:
 
 if __name__ == "__main__":
     """
-    Main function to demonstrate the bounding box extraction.
+    Demonstrats the bounding box extraction by displaying bounding boxes on a specific check.
 
-    Edit the TEST_FILE_NAME variable to view bounding boxes being drawn on the image.
+    TODO: Input / output command line args
     """
     session = boto3.Session(profile_name=AWS_PROFILE_NAME)
     textract_client = session.client('textract', region_name=AWS_REGION_NAME)

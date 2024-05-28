@@ -308,6 +308,28 @@ def merge_overlapping_boxes(boxes: list[BoundingBox]) -> list[BoundingBox]:
 
     return merged_boxes
 
+def draw_bounding_boxes_on_image(image_path: Path, bounding_boxes: list[BoundingBox], output_path: Path):
+    """
+    Draws bounding boxes on an image and saves the result to the specified output path.
+
+    Args:
+        image_path (Path): The path to the input image.
+        bounding_boxes (List[BoundingBox]): A list of bounding boxes to draw on the image.
+        output_path (Path): The path to save the output image with bounding boxes drawn.
+    """
+    # Read the image using OpenCV
+    image = cv2.imread(str(image_path))
+
+    if image is None:
+        raise ValueError(f"Failed to load image at {image_path}")
+
+    # Draw each bounding box on the image
+    for bbox in bounding_boxes:
+        x, y, w, h = bbox.x, bbox.y, bbox.width, bbox.height
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+    # Save the image with bounding boxes to the output path
+    cv2.imwrite(str(output_path), image)
 
 if __name__ == "__main__":
     """
@@ -340,25 +362,5 @@ if __name__ == "__main__":
         merged_bboxes = merged_bboxes + overlapped_merged
         overlapped_merged = merge_overlapping_boxes(overlapped_merged)
 
-    # Draw merged rectangles on the image
-    for bbox in overlapped_merged:
-        # Updated to use the attributes directly instead of unpacking
-        x, y, w, h = bbox.x, bbox.y, bbox.width, bbox.height
-        cv2.rectangle(image, (int(x), int(y)), (int(x + w), int(y + h)), (0, 255, 0), 2)
-
-    for bbox in micr_bounding_boxes:
-        # Updated to use the attributes directly instead of unpacking
-        x, y, w, h = bbox.x, bbox.y, bbox.width, bbox.height
-        cv2.rectangle(image, (int(x), int(y)), (int(x + w), int(y + h)), (0, 255, 0), 2)
-
-    scale_percent = 50  # percent of original size
-    width = int(image.shape[1] * scale_percent / 100)
-    height = int(image.shape[0] * scale_percent / 100)
-    dim = (width, height)
-
-    # Resize image
-    resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
-
-    cv2.imwrite(str(output_image_path), resized)
-
-    print(f"Resized image saved to {output_image_path}")
+    draw_bounding_boxes_on_image(input_image_path, overlapped_merged + micr_bounding_boxes, output_image_path)
+    print(f"Result image saved to {output_image_path}")

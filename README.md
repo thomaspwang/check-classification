@@ -57,3 +57,8 @@ TODO: Install LLaVA @jerli
 ## Possible TO-DOs
 - Configure environment variables automatically through `dotenv` or something instead of having redundant top-level variables such as `AWS_REGION` at the top of every file.
 - Configure logging
+
+
+## Debugging Tips
+- Using `draw_bounding_boxes_on_image` in `extraction/extract_bboxes.py` can be useful for visualizing bounding boxes. Note that bounding box coordinates are specific to a particular image, so boxes can only be drawn on the images they were generated on.
+- @jerli TODO

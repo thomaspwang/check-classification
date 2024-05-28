@@ -13,7 +13,7 @@ from pathlib import Path
 AWS_PROFILE_NAME = 'thwang'
 AWS_REGION_NAME = 'us-west-2'
 AWS_BUCKET_NAME = ...
-TEST_FILE_PATH = './data/images/mcd-test-4-front-98.jpg'
+TEST_FILE_PATH = './data/mcd-test-3-front-images/mcd-test-3-front-8.jpg'
 OUTPUT_FILE_PATH = './test_out.jpg'
 
 
@@ -67,7 +67,7 @@ def extract_bounding_boxes_from_path(
         response = textract_client.detect_document_text(
             Document={'Bytes': f.read()}
         )
-    print(response)
+
     blocks = response['Blocks']
     boundingbox_list = []
     
@@ -84,8 +84,10 @@ def extract_bounding_boxes_from_path(
 def textdump_from_path(
         img_path: Path,
         textract_client,
-) -> list[BoundingBox]:
+) -> list[str]:
     """ Dumps text from a check image stored locally. 
+    
+    TODO: Remove?
 
     Requires AWS_PROFILE_NAME and AWS_REGION_NAME to be set correctly.
     
@@ -114,7 +116,9 @@ def textdump_from_path(
     return text_lines
 
 def extract_bounding_boxes_from_s3(
-        file_name: str
+        file_name: str,
+        textract_client,
+        s3_resource,
 ) -> list[BoundingBox]:
     # TODO: Refactor to be the same as above
     """ Extract bounding boxes from check image stored in an S3 Bucket. 
@@ -127,18 +131,13 @@ def extract_bounding_boxes_from_s3(
     Returns:
         list[BoundingBox]: list of bounding boxes with coordinates and dimensions
     """
-    session = boto3.Session(profile_name = AWS_PROFILE_NAME)
-    s3_connection = session.resource('s3')
-    client = session.client('textract', region_name = AWS_REGION_NAME)
-    document = file_name
-
-    s3_object = s3_connection.Object(AWS_BUCKET_NAME, document)
+    s3_object = s3_resource.Object(AWS_BUCKET_NAME, file_name)
     s3_response = s3_object.get()
     stream = io.BytesIO(s3_response['Body'].read())
     image = Image.open(stream)
 
-    response = client.detect_document_text(
-        Document={'S3Object': {'Bucket': AWS_BUCKET_NAME, 'Name': document}})
+    response = textract_client.detect_document_text(
+        Document={'S3Object': {'Bucket': AWS_BUCKET_NAME, 'Name': file_name}})
     
     blocks = response['Blocks']
     boundingbox_list = []
@@ -154,23 +153,6 @@ def extract_bounding_boxes_from_s3(
             boundingbox_list.append(bbox)
     return boundingbox_list
 
-def get_image(
-        file_name: str
-) -> Image:
-    # TODO: Docstring
-    # Get the check stored in the bucket
-    session = boto3.Session(profile_name = AWS_PROFILE_NAME)
-    s3_connection = session.resource('s3')
-    document = file_name
-
-    # Retrieving the check image from AWS bucket  
-    s3_object = s3_connection.Object(AWS_BUCKET_NAME, document)
-    s3_response = s3_object.get()
-    stream = io.BytesIO(s3_response['Body'].read())
-    image=Image.open(stream)
-
-    return image
-    
 def merge_nearby_boxes(
         bboxes: list[BoundingBox],
         max_center_distance: int,
@@ -310,13 +292,10 @@ if __name__ == "__main__":
     session = boto3.Session(profile_name=AWS_PROFILE_NAME)
     textract_client = session.client('textract', region_name=AWS_REGION_NAME)
 
-    img_path = Path(TEST_FILE_PATH)
-    check_image = Image.open(img_path)
-
-    image = cv2.cvtColor(np.array(check_image), cv2.COLOR_RGB2BGR)
+    image = cv2.imread(TEST_FILE_PATH)
     max_distance = 20
     max_corner = (int)(image.shape[0] * 0.02)
-    bounding_boxes = extract_bounding_boxes_from_path(img_path, textract_client)
+    bounding_boxes = extract_bounding_boxes_from_path(Path(TEST_FILE_PATH), textract_client)
 
     # Doesn't merge MICR boxes with the rest of the boxes
     micr_bounding_boxes = bounding_boxes[-2:]

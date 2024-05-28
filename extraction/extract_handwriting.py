@@ -12,6 +12,7 @@ from PIL import Image
 from llava_wrapper import LLaVA
 from typing import Any
 import sys
+from extraction_utils import crop_image
 
 # TODO: Rename 'parse_handwriting' semantic to 'parse_bbox' since we're running it on non-handwriting portions.
 # TODO: Get LLaVa working for pip - or make a docker instance?
@@ -21,17 +22,6 @@ TEMPFILE_PATH = "/tmp/tempfile.jpg"
 class ExtractMode(Enum):
     DOC_TR = "DocTR"
     LLAVA = "LLAVA"
-
-def crop_image(image_path: Path, bbox: BoundingBox):
-    image = Image.open(image_path)
-    if bbox is None:
-        return image
-    if image.mode == 'RGBA':
-        image = image.convert('RGB')
-    x1, y1 = bbox.top_left_corner()
-    x2, y2 = bbox.bottom_right_corner()
-    return image.crop((x1, y1, x2, y2))
-
 
 def parse_handwriting(
         img_path: Path,

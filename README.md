@@ -49,3 +49,6 @@ Note: `pip install torch torchvision torchaudio` assumes that your system has Cu
 TODO: Install LLaVA @jerli
 
 ## Folder Structure (TO-DO)
+
+## TO-DO
+- Configure environment variables automatically through `dotenv` or something instead of having redundant top-level variables such as `AWS_REGION` at the top of every file.

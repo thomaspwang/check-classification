@@ -14,8 +14,8 @@ from extract_bboxes import (
 from extract_handwriting import (
     parse_handwriting,
     ExtractMode,
-    crop_image
 )
+from extraction_utils import crop_image
 from PIL import Image
 import time
 from tqdm import tqdm

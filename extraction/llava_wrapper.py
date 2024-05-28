@@ -92,7 +92,7 @@ class LLaVA:
         prompt = self.process_query(query, self.conv_mode, self.model_name)
         images = [self.load_image(image_file)]
         image_sizes = [x.size for x in images]
-        images_tensor = self.process_images(
+        images_tensor = process_images(
             images,
             self.image_processor,
             self.model.config
@@ -105,7 +105,7 @@ class LLaVA:
         )
 
         with torch.inference_mode():
-            output_ids = model.generate(
+            output_ids = self.model.generate(
                 input_ids,
                 images=images_tensor,
                 image_sizes=image_sizes,

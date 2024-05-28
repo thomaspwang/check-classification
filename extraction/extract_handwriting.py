@@ -51,7 +51,7 @@ def parse_handwriting(
         
         case ExtractMode.LLAVA:
             assert isinstance(model, LLaVA)
-            return parse_handwriting_llava(mode, img_path, box, prompt)
+            return parse_handwriting_llava(model, img_path, box, prompt)
         
         case _:
             raise ValueError(f"Invalid mode: {mode}")

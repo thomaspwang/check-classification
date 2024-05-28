@@ -26,7 +26,7 @@ session = boto3.Session(profile_name=AWS_PROFILE_NAME)
 textract_client = session.client('textract', region_name=AWS_REGION_NAME)
 
 model = generate_LLaVA_model()
-PROMPT = "Scan the check and list only the following information in key:value form separated by newlines: Check Number, Check Amount, Payer First Name, Payer Last Name, Payer Routing Number, Payer Account Number. As a first pass, an OCR engine has scanned the check and the text on it reads: "
+PROMPT = "Scan the check and list only the following information in key:value form separated by newlines: Check Number, Check Amount, Payer First Name, Payer Last Name, Payer Routing Number, Payer Account Number. For your information, the Check Number is typically less than ten thousand and is at the top right of the check. The Routing Number is at the bottom left of the check and is at least nine digits long, and afterwards is the Payer Account Number which is also at least nine digits long. Supplement your response with text extracted by an OCR engine from the check: "
 
 # processes check images
 def processCheck(dataset_path, labels, out_file) -> int:
@@ -61,10 +61,10 @@ def processCheck(dataset_path, labels, out_file) -> int:
                 print(counter)
             textdump = textdump_from_path(Path(file_path), textract_client)
             out = parse_handwriting(Path(file_path), None, ExtractMode.LLAVA, model, PROMPT + " ".join(textdump))
-            print(out)
-            if counter > 5:
-                exit(0)
+            if (counter %100 == 3 or counter %100 == 4):
+                print(out)
             row = ["NA","NA","NA","NA","NA","NA"]
+            parts = [part for segment in out.split("\n") for part in segment.split(": ")]
             #print(parts)
             while(len(parts) > 0):
                 label = parts.pop(0)

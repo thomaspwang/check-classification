@@ -2,7 +2,11 @@
 
 # Check Classification and Fraud Detection
 
-## Initial Environment Setup
+## Overview
+
+## Folder Structure
+
+## Environment Setup
 
 You only need perform steps 1 through  4 **once**. You can check if you've completed the environment by checking that a `.venv/` file exists in your local repository. 
 
@@ -48,7 +52,8 @@ Note: `pip install torch torchvision torchaudio` assumes that your system has Cu
 <br> **Step 5** <br>
 TODO: Install LLaVA @jerli
 
-## Folder Structure (TO-DO)
+## Usage
 
-## TO-DO
+## Possible TO-DOs
 - Configure environment variables automatically through `dotenv` or something instead of having redundant top-level variables such as `AWS_REGION` at the top of every file.
+- Configure logging

@@ -106,19 +106,19 @@ check_data_llava: list[str] = extract_data(INPUT_IMAGE_PATH, textract_client, Ex
 ## Demos
 
 <br> **Extracting Bounding Boxes** <br>
-Writes a full-sized check image with the bounding boxes draw on it to a specified output file.
+Writes a full-sized check image with the bounding boxes draw on it to a specified output file.<br>
 `python extract_bboxes.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg output_image.jpg`
 
 <br> **Extracting MICR from an image** <br>
-Prints out a `MICRData` dataclass object generated from a full-sized check image to the console.
+Prints out a `MICRData` dataclass object generated from a full-sized check image to the console.<br>
 `python extract_micr.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg`
 
 <br> **Treasury Check Classification** <br>
-Prints out whether or not a given full-sized input check is a treasury check or not.
+Prints out whether or not a given full-sized input check is a treasury check or not.<br>
 `python classify_treasury.py ../data/mcd-test-4-front-images/mcd-test-4-front-70.jpg`
 
 <br> **Extracting all data from a check image** <br>
-Prints out all text data extracted from a full-sized check image as a list of strings.
+Prints out all text data extracted from a full-sized check image as a list of strings.<br>
 `python extract.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg --model llava`
 
 

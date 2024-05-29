@@ -80,7 +80,7 @@ For local testing and development, we recommend creating a local folder such as 
 <br> **Treasury Check Classification** <br>
 `python classify_treasury.py ../data/mcd-test-4-front-images/mcd-test-4-front-70.jpg`
 
-<br> **Extracting all data from a check image* <br>
+<br> **Extracting all data from a check image** <br>
 `python extract.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg --model llava`
 
 

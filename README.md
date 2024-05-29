@@ -96,7 +96,7 @@ except MICRExtractionError as e:
 
 # Scraping speciifc check data using LLaVA
 PROMPT = "Scan this check and output the check amount as a string"
-llava_check_amount_output = parse_bbox(INPUT_IMAGE_PATH, box=None, ExtractMode.LLAVA, llava_model, PROMPT)
+llava_check_amount_output: str = parse_bbox(INPUT_IMAGE_PATH, box=None, ExtractMode.LLAVA, llava_model, PROMPT)
 
 # Scraping all check data using LLaVA and doctr
 check_data_doctr: list[str] = extract_data(INPUT_IMAGE_PATH, textract_client, ExractMode.DOC_TR)

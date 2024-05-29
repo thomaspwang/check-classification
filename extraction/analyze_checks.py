@@ -59,7 +59,7 @@ class Strategy(Enum):
     """
     LLAVA_AMOUNT_AND_NAME = "LLAVA_AMOUNT_AND_NAME"
     TEXTRACT_MICR = "TEXTRACT_MICR"
-    LLAVA_treasury = "LLAVA_treasury"
+    LLAVA_TREASURY = "LLAVA_TREASURY"
 
 
 def LLaVA_amount_and_name(
@@ -94,10 +94,14 @@ def textract_micr(
     """
     try:
         micr_data: MICRData = extract_micr_data(image_path, textract_client)
-        return [micr_data.check_number, micr_data.account_number, micr_data.routing_number]
-    
+        micr_output = [micr_data.check_number, micr_data.account_number, micr_data.routing_number]
+
     except MICRExtractionError:
-        return ["Error", "Error", "Error"]
+        return ["NA", "NA", "NA"]
+
+    # in the given labels, leading zeros are removed.
+    # This is outside the try catch as we want to see the exception if we are not able to cast the output to an int.
+    return [int(number) for number in micr_output]
 
 def LLAVA_treasury(
         file_path: Path, 
@@ -183,9 +187,9 @@ if __name__ == "__main__":
             inference_function = textract_micr
             model = textract_client
 
-        case Strategy.LLAVA_treasury:
+        case Strategy.LLAVA_TREASURY:
             headers = ["Check Type"]
-            fn_to_eval = LLAVA_treasury
+            inference_function = LLAVA_treasury
             model = generate_LLaVA_model()
 
         case _:
@@ -201,7 +205,7 @@ if __name__ == "__main__":
     print("Average Seconds per Inference: ", elapsed_time.total_seconds() / num_checks_processed)
     seconds_per_inference = elapsed_time.total_seconds() / num_checks_processed
 
-    if args.strategy == Strategy.LLAVA_AMOUNT_AND_NAME:
+    if args.strategy in [Strategy.LLAVA_AMOUNT_AND_NAME, Strategy.LLAVA_TREASURY]:
         print("Cost per Inference in USD: ", seconds_per_inference/(60*60) * HOURLY_COST)
 
     print(f"Writing results to {outfile_path}")

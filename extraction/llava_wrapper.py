@@ -24,7 +24,7 @@ import re
 
 class LLaVA:
     # TODO: make model_path an enum
-    def __init__(self, model_path, model_base=None, conv_mode=None, temperature=0, top_p=None, num_beams=1, max_new_tokens=512):
+    def __init__(self, model_path, model_base=None, conv_mode=None, temperature=0, top_p=None, num_beams=1, max_new_tokens=512, quantize=True):
         disable_torch_init()
         self.conv_mode = conv_mode
         self.temperature = temperature
@@ -34,7 +34,7 @@ class LLaVA:
 
         self.model_name = get_model_name_from_path(model_path)
         self.tokenizer, self.model, self.image_processor, self.context_len = load_pretrained_model(
-            model_path, model_base, self.model_name
+            model_path, model_base, self.model_name, load_4bit=quantize
         )
 
     def load_image(self, image_file):
@@ -119,7 +119,3 @@ class LLaVA:
 
         outputs = self.tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
         return outputs
-
-#model = LLaVA("liuhaotian/llava-v1.6-34b")
-#PROMPT = "Scan the check and list only the following information in key:value form separated by newlines: Check Number, Check Amount, Payer First Name, #Payer Last Name, Payer Routing Number, Payer Account Number."
-#model.eval( "../dataset3/mcd-test-3-front-images/mcd-test-3-front-3.jpg",PROMPT)

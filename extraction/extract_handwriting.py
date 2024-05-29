@@ -25,13 +25,16 @@ class ExtractMode(Enum):
 
 def parse_handwriting(
         img_path: Path,
-        box : BoundingBox,
+        box : BoundingBox | None,
         mode : ExtractMode,
         model: Any,
         prompt: str = "Print the text in this image."
 ) -> str:
     """
-    Note: Make sure model matches the mode.
+
+    Note that if 'box' is None, the entire image will be considered as the bounding box.
+
+    Ensure that the model matches the mode.
     """
 
     match mode:

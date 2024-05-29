@@ -52,8 +52,9 @@ def extract_data(
         textract_client,
         extract_mode: ExtractMode,
         merge_boxes: bool = False,
-) -> str:
-    #TODO: Docstring
+) ->list[str]:
+    """ Extracts all the data off a check image.
+    """
     start_time = time.time()
 
     bounding_boxes = extract_bounding_boxes_from_path(img_path, textract_client)

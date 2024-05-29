@@ -94,7 +94,7 @@ try:
 except MICRExtractionError as e:
     raise
 
-# Scraping speciifc check data using LLaVA
+# Scraping specific check data using LLaVA
 PROMPT = "Scan this check and output the check amount as a string"
 llava_check_amount_output: str = parse_bbox(INPUT_IMAGE_PATH, box=None, ExtractMode.LLAVA, llava_model, PROMPT)
 
@@ -121,6 +121,36 @@ Prints out whether or not a given full-sized input check is a treasury check or 
 Prints out all text data extracted from a full-sized check image as a list of strings.<br>
 `python extract.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg --model llava`
 
+## Benchmarking Algorithms
+
+<br> **Add or a Select a Strategy** <br>
+Go to extraction/analyze_checks.py, and follow the module docstring to add a strategy or select
+an existing strategy of {LLAVA_AMOUNT_AND_NAME, TEXTRACT_MICR, LLAVA_TREASURY}. 
+
+<br> **Obtain a Dataset and Labels** <br>
+Obtain a dataset of check images and put it in a folder. The image file names must be in the format
+`mcd-test-N-front-##.jpg`, where N is one digit and ## can be any amount of digits. 
+
+The label file should be a csv with each row corresponding directly to the check number (e.g. row 0 are the headers,
+and row 1 corresponds to `mcd-test-N-front-1.jpg`. The label file must be contiguous, but the dataset
+does not need to include all files specified by the label set. The datasets provided by @jts (N=1-5)
+should all work. Examples of label files are in the datasets provided by @jts; convert the mcd-test-N-image-details.numbers
+to csvs and that will be a valid label file.
+
+<br> **Run Inference on the Dataset** <br>
+`cd sofi-check-classification`
+`python extraction/analyze_checks.py <path_to_dataset_folder> <path_to_output_csv> <strategy>`
+
+example:
+`python extraction/analyze_checks.py ../mcd-test-3-front-images/ ../LLAVA_TREASURY_PREDICTIONS.csv LLAVA_TREASURY`
+This will compute some statistics like seconds / inference and $ / inference.
+
+<br> **Compute Aggregate Statistics** <br>
+To compute statistics like hit rate, accuracy and edit distance, run
+`python scripts/compare_predictions_to_labels.py <path_to_dataset_folder> <path_to_prediction_csv> <path_to_labels> --verbose`
+
+example:
+`python scripts/compare_predictions_to_labels.py ../mcd-test-3-front-images/ ../LLAVA_TREASURY_PREDICTIONS.csv ../mcd-test-3-image-details.csv --verbose`
 
 ## Possible TO-DOs
 

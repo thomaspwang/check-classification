@@ -200,3 +200,8 @@ example:<br>
 ## Debugging Tips
 
 - Using `draw_bounding_boxes_on_image` in `extraction/extract_bboxes.py` can be useful for visualizing bounding boxes. Note that bounding box coordinates are specific to a particular image, so boxes can only be drawn on the images they were generated on.
+
+
+## Initial Contributors
+thomaswang@berkeley.edu
+jermxt@berkeley.edu

@@ -190,7 +190,7 @@ if __name__ == "__main__":
 
         case Strategy.LLAVA_treasury:
             headers = ["Check Type"]
-            fn_to_eval = LLAVA_treasury
+            inference_function = LLAVA_treasury
             model = generate_LLaVA_model()
 
         case _:

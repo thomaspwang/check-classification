@@ -8,12 +8,8 @@
 
 ## Environment Setup
 
-You only need perform steps 1 through 4 **once**. You can check if you've completed the environment by checking that a `.venv/` file exists in your local repository. 
-
 <br> **Step 0** <br>
-If you are using SageMaker, ensure that your notebook is using at least a ml.g5.2xlarge.
-(If you want to run models in their non-quantized form, use a ml.g5.12xlarge).
-Set your volume size to 500GB EBS.
+We used AWS SageMaker notebooks throughout the development of this project. Ensure that your notebook is using at least a `ml.g5.2xlarge` instance. However, to run models in their non-quantized form, you must use at least a `ml.g5.12xlarge` instance. Lastly, we recommend using a volume size of atleast 500GB EBS since the LLaVA model is large.
 
 <br> **Step 1** <br>
 Make sure you have an updated Python version with
@@ -80,7 +76,7 @@ For local testing and development, we recommend creating a local folder such as 
 <br> **Treasury Check Classification** <br>
 `python classify_treasury.py ../data/mcd-test-4-front-images/mcd-test-4-front-70.jpg`
 
-<br> **Extracting all data from a check image* <br>
+<br> **Extracting all data from a check image** <br>
 `python extract.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg --model llava`
 
 
@@ -93,4 +89,3 @@ For local testing and development, we recommend creating a local folder such as 
 ## Debugging Tips
 
 - Using `draw_bounding_boxes_on_image` in `extraction/extract_bboxes.py` can be useful for visualizing bounding boxes. Note that bounding box coordinates are specific to a particular image, so boxes can only be drawn on the images they were generated on.
-- @jerli TODO

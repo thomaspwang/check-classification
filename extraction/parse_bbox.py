@@ -23,7 +23,7 @@ class ExtractMode(Enum):
     DOC_TR = "DocTR"
     LLAVA = "LLaVA"
 
-def parse_handwriting(
+def parse_bbox(
         img_path: Path,
         box : BoundingBox | None,
         mode : ExtractMode,

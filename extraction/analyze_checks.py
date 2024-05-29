@@ -35,9 +35,9 @@ from enum import Enum
 from pathlib import Path
 from tqdm import tqdm
 from extract import extract_data
-from extract_handwriting import (
+from parse_bbox import (
     generate_LLaVA_model,
-    parse_handwriting,
+    parse_bbox,
     ExtractMode,
 )
 from classify_treasury import is_treasury_check
@@ -80,7 +80,7 @@ def LLaVA_amount_and_name(
     """
     PROMPT = "Scan the check and list only the following information in key:value form separated by newlines: Check Amount, Payer First Name, Payer Last Name. For each piece of information not present in the check, return \"NA\" as the value. The Payer Name is located in printed text at the top left corner of the check. DO NOT use the Payee name which is handwritten in the center of the check. Validate the Check Amount by comparing the handwritten amount with the digits on the right side of the check. "
     headers = ["Check Amount", "Payer First Name", "Payer Last Name"]
-    output = parse_handwriting(file_path, None, ExtractMode.LLAVA, model, PROMPT)
+    output = parse_bbox(file_path, None, ExtractMode.LLAVA, model, PROMPT)
     row = ["NA"]*len(headers)
     parts = [part for segment in output.split("\n") for part in segment.split(": ")]
     while(len(parts) > 0):

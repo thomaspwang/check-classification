@@ -59,7 +59,7 @@ class Strategy(Enum):
     """
     LLAVA_AMOUNT_AND_NAME = "LLAVA_AMOUNT_AND_NAME"
     TEXTRACT_MICR = "TEXTRACT_MICR"
-    LLAVA_treasury = "LLAVA_treasury"
+    LLAVA_TREASURY = "LLAVA_TREASURY"
 
 
 def LLaVA_amount_and_name(
@@ -188,7 +188,7 @@ if __name__ == "__main__":
             inference_function = textract_micr
             model = textract_client
 
-        case Strategy.LLAVA_treasury:
+        case Strategy.LLAVA_TREASURY:
             headers = ["Check Type"]
             inference_function = LLAVA_treasury
             model = generate_LLaVA_model()
@@ -206,7 +206,7 @@ if __name__ == "__main__":
     print("Average Seconds per Inference: ", elapsed_time.total_seconds() / num_checks_processed)
     seconds_per_inference = elapsed_time.total_seconds() / num_checks_processed
 
-    if args.strategy in [Strategy.LLAVA_AMOUNT_AND_NAME, Strategy.LLAVA_treasury]:
+    if args.strategy in [Strategy.LLAVA_AMOUNT_AND_NAME, Strategy.LLAVA_TREASURY]:
         print("Cost per Inference in USD (MACHIN): ", seconds_per_inference/(60*60) * HOURLY_COST)
 
     print(f"Writing results to {outfile_path}")

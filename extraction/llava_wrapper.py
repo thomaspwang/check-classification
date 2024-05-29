@@ -34,7 +34,7 @@ class LLaVA:
 
         self.model_name = get_model_name_from_path(model_path)
         self.tokenizer, self.model, self.image_processor, self.context_len = load_pretrained_model(
-            model_path, model_base, self.model_name, load_8bit=quantize
+            model_path, model_base, self.model_name, load_4bit=quantize
         )
 
     def load_image(self, image_file):

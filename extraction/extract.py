@@ -1,6 +1,6 @@
 #!./venv/bin/python3.10
 """
-Main script for extracting data from check images using AWS Textract and various OCR models.
+Module for extracting all text data from check images using various models.
 
 This module orchestrates different extraction methods provided in the sofi-check-classification/extraction package 
 to process check images, extract bounding boxes, merge nearby and overlapping boxes if specified, 
@@ -20,7 +20,7 @@ Functions:
         Extracts data from a check image using specified extraction mode and optionally merges bounding boxes.
 
 
-To run the script, ensure that AWS credentials are configured correctly.
+To run this module as a script, ensure that AWS credentials are configured correctly.
 """
 
 import argparse

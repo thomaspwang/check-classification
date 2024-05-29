@@ -1,9 +1,5 @@
 """
-Utility functions for extracting and manipulating bounding boxes in images.
-
-This module provides helper functions to crop images based on bounding boxes,
-merge multiple bounding boxes, find the largest bounding box by area, and
-stretch a bounding box by a given percentage.
+Utility functions for check data extraction.
 
 Functions:
     crop_image(image_path: Path, bbox: BoundingBox) -> Image:

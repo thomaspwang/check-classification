@@ -34,7 +34,7 @@ Classes:
     BoundingBox:
         Represents a rectangular bounding box with coordinates and dimensions.
 
-To run the script, ensure that AWS credentials are configured correctly.
+To run this module as a script, ensure that AWS credentials are configured correctly.
 """
 
 import argparse

@@ -1,5 +1,30 @@
-#TODO: Module docstring
+"""
+Module for extracting specific text from images using various OCR models.
 
+This module provides functions to extract text from specified bounding boxes within images 
+using either the LLaVA or DocTR OCR models. The extraction process involves cropping the image 
+to the bounding box and then passing it to the appropriate model for text extraction.
+
+Functions:
+    parse_bbox(img_path: Path, box: BoundingBox | None, mode: ExtractMode, model: Any, prompt: str) -> str:
+        Extracts text from a specified bounding box within an image using the specified model and mode.
+
+    generate_doctr_model() -> OCRPredictor:
+        Initializes and returns a pretrained DocTR OCR model.
+
+    parse_bbox_doctr(model: Any, img_path: Path, box: BoundingBox) -> str:
+        Extracts text from a specified bounding box within an image using the DocTR model.
+
+    generate_LLaVA_model() -> LLaVA:
+        Initializes and returns a pretrained LLaVA model.
+
+    parse_bbox_llava(model: Any, img_path: Path, box: BoundingBox, prompt: str) -> str:
+        Extracts text from a specified bounding box within an image using the LLaVA model.
+
+Classes:
+    ExtractMode(Enum):
+        Enum defining the supported extraction modes (DOC_TR and LLAVA).
+"""
 
 from enum import Enum
 from pathlib import Path
@@ -13,9 +38,6 @@ from llava_wrapper import LLaVA
 from typing import Any
 import sys
 from extraction_utils import crop_image
-
-# TODO: Rename 'parse_handwriting' semantic to 'parse_bbox' since we're running it on non-handwriting portions.
-# TODO: Get LLaVa working for pip - or make a docker instance?
 
 TEMPFILE_PATH = "/tmp/tempfile.jpg"
 
@@ -40,11 +62,11 @@ def parse_bbox(
     match mode:
         case ExtractMode.DOC_TR:
             assert isinstance(model, OCRPredictor)
-            return parse_handwriting_doctr(model, img_path, box)
+            return parse_bbox_doctr(model, img_path, box)
         
         case ExtractMode.LLAVA:
             assert isinstance(model, LLaVA)
-            return parse_handwriting_llava(model, img_path, box, prompt)
+            return parse_bbox_llava(model, img_path, box, prompt)
         
         case _:
             raise ValueError(f"Invalid mode: {mode}")
@@ -53,12 +75,12 @@ def parse_bbox(
 def generate_doctr_model() -> OCRPredictor:
     return (ocr_predictor(pretrained=True)).cuda()
 
-def parse_handwriting_doctr(
+def parse_bbox_doctr(
         model: Any,
         img_path: Path,
         box : BoundingBox,
 ) -> str:
-    """ Parse handwriting using DocTR model """
+    """ Parse a bounding box using DocTR model """
     cropped_image = crop_image(img_path, box)
     cropped_image.save(TEMPFILE_PATH)
     doc = DocumentFile.from_images(TEMPFILE_PATH)
@@ -80,13 +102,13 @@ def generate_LLaVA_model() -> LLaVA:
     """
     return LLaVA("liuhaotian/llava-v1.6-34b")
 
-def parse_handwriting_llava(
+def parse_bbox_llava(
         model: Any,
         img_path: Path,
         box : BoundingBox,
         prompt: str
 ) -> str:
-    """ Parse handwriting using LLAVA model """
+    """ Parse a bounding box using LLAVA model """
     cropped_image = crop_image(img_path, box)
     cropped_image.save(TEMPFILE_PATH)
     return model.eval(TEMPFILE_PATH, prompt)

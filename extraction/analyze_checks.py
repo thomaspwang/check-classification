@@ -23,6 +23,8 @@ How to Add A New Strategy:
         2a. Take a look at 'LLaVA_amount_and_name' or 'textract_micr' as examples.
 
     3. Add a case statement in the module script under 'match args.strategy:'
+
+To run this module as a script, ensure that AWS credentials are configured correctly.
 """
 
 import argparse

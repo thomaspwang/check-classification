@@ -4,7 +4,7 @@
 
 ## Overview
 
-## Folder Structure
+## Repository Structure
 
 ## Environment Setup
 
@@ -46,7 +46,7 @@ pip install python-doctr
 pip install torch torchvision torchaudio
 ```
 
-Note: We've found that we needed to do this on EC2 instances (ml.g5.12xlarge). 
+Note: We've found that we needed to do this on EC2 instances (ml.g5.12xlarge).
 Note: `pip install torch torchvision torchaudio` assumes that your system has Cuda 12.1.
 
 <br> **Step 5** <br>

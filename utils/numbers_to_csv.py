@@ -1,5 +1,17 @@
 #!./venv/bin/python3.10
-""" Converts .numbers file to .csv
+"""Converts .numbers file to .csv.
+
+This script takes a .numbers file as input and converts it to a .csv file. 
+
+Usage:
+    python convert_numbers_to_csv.py file_path output_path
+
+Arguments:
+    file_path (str): Path to the .numbers file to be converted.
+    output_path (str): Path where the resulting .csv file will be saved.
+
+Example:
+    python convert_numbers_to_csv.py input.numbers output.csv
 """
 import argparse
 
@@ -31,8 +43,6 @@ def convert_numbers_to_csv(file_path: Path, output_path: Path):
 
 
 if __name__ == "__main__":
-    # TODO: Improve cmd interface
-
     parser = argparse.ArgumentParser()
     parser.add_argument('file_path', type=str, help='TODO')
     parser.add_argument('output_path', type=str, help='TODO')

@@ -130,7 +130,6 @@ def analyze_checks(
 
         # Write the headers to the CSV file
         csv_writer.writerow(headers)
-        counter = 0
 
         # Finicky, relies on files being in the mcd-test-N-front-##.jpg 
         # (e.g. must have exactly 17 chars before the number.)
@@ -203,6 +202,6 @@ if __name__ == "__main__":
     seconds_per_inference = elapsed_time.total_seconds() / num_checks_processed
 
     if args.strategy == Strategy.LLAVA_AMOUNT_AND_NAME:
-        print("Cost per Inference in USD (MACHIN): ", seconds_per_inference/(60*60) * HOURLY_COST)
+        print("Cost per Inference in USD: ", seconds_per_inference/(60*60) * HOURLY_COST)
 
     print(f"Writing results to {outfile_path}")

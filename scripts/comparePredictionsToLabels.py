@@ -2,6 +2,7 @@ import argparse
 import csv
 import os
 
+# TODO: Module docstring: please
 # TODO: Rename this camelcase garbage
 
 def calculate_edit_distance(s1, s2):
@@ -79,6 +80,7 @@ def calculate_average_edit_distance(dataset_folder, predictions, labels, verbose
     counts = {header: 0 for header in headers}
     accuracy = {header: 0 for header in headers}
     missing_reads = {header: 0 for header in headers}
+    hit_rate = {header: 0 for header in headers}
 
     total_rows = 0
     # Iterate over rows in both files
@@ -130,8 +132,9 @@ def calculate_average_edit_distance(dataset_folder, predictions, labels, verbose
     for header in headers:
         avg_edit_distance[header] /= counts[header]
         accuracy[header] /= counts[header]
+        hit_rate[header] = counts[header] / (counts[header] + missing_reads[header])
 
-    return avg_edit_distance, accuracy, missing_reads, total_rows, skip_idxs
+    return avg_edit_distance, accuracy, hit_rate, missing_reads, total_rows, skip_idxs
 
 
 if __name__ == "__main__":
@@ -147,8 +150,9 @@ if __name__ == "__main__":
     #PREDICTIONS = "LLaVA_Benchmark-v1.6.csv"
     # characters to remove from check amount
     CHARS_TO_REMOVE = "$,"
-    avg_edit_distance, accuracy, missing_reads, total_rows, skip_idxs = \
+    avg_edit_distance, accuracy, hit_rate, missing_reads, total_rows, skip_idxs = \
         calculate_average_edit_distance(args.dataset_folder, args.predictions, args.labels, args.verbose)
+    print("Note": Edit distance and accuracy only account for hits.")
     print("Average Edit Distance for each column:")
     for header, distance in avg_edit_distance.items():
         print(f"{header}: {distance}")
@@ -156,3 +160,7 @@ if __name__ == "__main__":
     print("Accuracy for each column:")
     for header, acc in accuracy.items():
         print(f"{header}: {acc}")
+
+    print("Hit Rate for each column:")
+    for header, hit_rate in hit_rate.items():
+        print(f"{header}: {hit_rate}")

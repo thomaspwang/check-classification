@@ -4,7 +4,10 @@
 
 ## Overview
 
-## Repository Structure
+This repo provides a set of modules and functions to extract information from check images as well as classify check types.
+It supports different OCR strategies including LLaVA, DocTR and Amazon Textract.
+
+https://docs.google.com/presentation/d/1lbg0_yc7BgP9efKZR0iPUIo8Nylqx6sAo6SApx0MH-E/edit?pli=1#slide=id.g2e0ac83555e_0_0
 
 ## Environment Setup
 

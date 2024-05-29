@@ -162,12 +162,11 @@ Prints out all text data extracted from a full-sized check image as a list of st
 `python extract.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg --model llava`
 
 ## Benchmarking Algorithms
-
-<br> **Add or a Select a Strategy** <br>
+<br> **1. Add or a Select a Strategy** <br>
 Go to extraction/analyze_checks.py, and follow the module docstring to add a strategy or select
 an existing strategy of {LLAVA_AMOUNT_AND_NAME, TEXTRACT_MICR, LLAVA_TREASURY}. 
 
-<br> **Obtain a Dataset and Labels** <br>
+<br> **2. Obtain a Dataset and Labels** <br>
 Obtain a dataset of check images and put it in a folder. The image file names must be in the format
 `mcd-test-N-front-##.jpg`, where N is one digit and ## can be any amount of digits. 
 
@@ -177,7 +176,7 @@ does not need to include all files specified by the label set. The datasets prov
 should all work. Examples of label files are in the datasets provided by @jts; convert the mcd-test-N-image-details.numbers
 to csvs and that will be a valid label file.
 
-<br> **Run Inference on the Dataset** <br>
+<br> **3. Run Inference on the Dataset** <br>
 `cd sofi-check-classification`
 `python extraction/analyze_checks.py <path_to_dataset_folder> <path_to_output_csv> <strategy>`
 
@@ -185,7 +184,7 @@ example:
 `python extraction/analyze_checks.py ../mcd-test-3-front-images/ ../LLAVA_TREASURY_PREDICTIONS.csv LLAVA_TREASURY`
 This will compute some statistics like seconds / inference and $ / inference.
 
-<br> **Compute Aggregate Statistics** <br>
+<br> **4. Compute Aggregate Statistics** <br>
 To compute statistics like hit rate, accuracy and edit distance, run
 `python scripts/compare_predictions_to_labels.py <path_to_dataset_folder> <path_to_prediction_csv> <path_to_labels> --verbose`
 

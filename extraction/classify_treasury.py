@@ -38,20 +38,10 @@ def is_treasury_check(img_path: Path, model: any) -> bool:
         raise ValueError(output)
 
 if __name__ == "__main__":
-    # TODO: Probably clean this!
     parser = argparse.ArgumentParser()
-    parser.add_argument('dataset_folder', type=str, help='Folder path of dataset 4.')
+    parser.add_argument('image_path', type=str, help='Folder path of dataset 4.')
     args = parser.parse_args()
 
-    num_total = len(TREASURY_CHECK_NUMS)
-    num_correct = 0
-
     model = generate_LLaVA_model()
-    for treasury_check_num in tqdm(TREASURY_CHECK_NUMS, desc="Processing Treasury Checks"):
-        file_path = Path(f"{args.dataset_folder}/mcd-test-4-front-{treasury_check_num}.jpg")
 
-        if is_treasury_check(file_path, model):
-            num_correct += 1
-
-    print(f"Accuracy: {num_correct / num_total * 100}%")
-    print(f"")
+    print(f"This file is a treasury check: {is_treasury_check(args.image_path, model)}")

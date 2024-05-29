@@ -8,8 +8,12 @@
 
 ## Environment Setup
 
-You only need perform steps 1 through  4 **once**. You can check if you've completed the environment by checking that a `.venv/` file exists in your local repository. 
+You only need perform steps 1 through 4 **once**. You can check if you've completed the environment by checking that a `.venv/` file exists in your local repository. 
 
+<br> **Step 0** <br>
+If you are using SageMaker, ensure that your notebook is using at least a ml.g5.2xlarge.
+(If you want to run models in their non-quantized form, use a ml.g5.12xlarge).
+Set your volume size to 500GB EBS.
 
 <br> **Step 1** <br>
 Make sure you have an updated Python version with
@@ -49,9 +53,20 @@ Note: We've found that we needed to do this on EC2 instances (`ml.g5.12xlarge`).
 Note: `pip install torch torchvision torchaudio` assumes that your system has Cuda 12.1.
 
 <br> **Step 6** <br>
-TODO: Install LLaVA @jerli
+To install llava, run
+```
+pip install -e git+https://github.com/haotian-liu/LLaVA.git@c121f04#egg=llava
+```
 
 <br> **Step 7** <br>
+Once within the notebook terminal, run 
+```
+export HOME="/home/ec2-user/SageMaker"
+```
+This is because the 500GB drive is mounted on SageMaker, while a smaller 50GB drive is mounted at /home/ec2-user.
+An out-of-disk-space error will occur as libraries and model weights will download to the default HOME=/home/ec2-user.
+
+<br> **Step 8** <br>
 For local testing and development, we recommend creating a local folder such as `sofi-check-classification/data` for PII images and labeled data.
 
 ## Usage Examples
@@ -63,7 +78,7 @@ For local testing and development, we recommend creating a local folder such as 
 `python extract_micr.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg`
 
 <br> **Treasury Check Classification** <br>
-TODO: @Jerli
+`python classify_treasury.py ../data/mcd-test-4-front-images/mcd-test-4-front-70.jpg`
 
 <br> **Extracting all data from a check image* <br>
 `python extract.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg --model llava`

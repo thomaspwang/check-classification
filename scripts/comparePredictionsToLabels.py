@@ -60,15 +60,7 @@ def remove_missing_rows(dataset_folder, labels):
             pass
     return new_labels
 
-def add_filename_column(dataset_folder, labels):
-    def comparator(file_string):
-        try:
-            return int(file_string[17:-4])
-        except:
-            # arbitrary large number to kick weird files to the end.
-            return 100000000
-
-    files = os.listdir(dataset_folder)
+def add_filename_column(labels):
     for index in range(len(labels)):
         labels[index]["check_file_num"] = f"{index+1}"
     return labels
@@ -86,12 +78,11 @@ def calculate_average_edit_distance(dataset_folder, predictions, labels, verbose
 
     labelData = remove_extra_columns(predictions, labels)
 
-    labelData = add_filename_column(dataset_folder, labelData)
+    labelData = add_filename_column(labelData)
 
     # skip rows of files not present in dataset. This only applies to partial datasets
     labelData = remove_missing_rows(dataset_folder, labelData)
 
-    # Dictionary to store average edit distance for each column
     avg_edit_distance = {header: 0 for header in headers}
     counts = {header: 0 for header in headers}
     accuracy = {header: 0 for header in headers}
@@ -99,10 +90,10 @@ def calculate_average_edit_distance(dataset_folder, predictions, labels, verbose
     hit_rate = {header: 0 for header in headers}
 
     total_rows = 0
-    # Iterate over rows in both files
     for index, (row1, row2) in enumerate(zip(predictionData, labelData)):
 
-        # Empirically if the LLM returns NA for all fields, this means the check image was blank.
+        # Uncomment this if the dataset you use has lots of blank / "Record Of Deposit" images.
+        # However, some true negatives may be skipped by this snippet.
         # if all_na(row1):
         #     skip_idxs.append(index)
         #     continue
@@ -176,7 +167,7 @@ if __name__ == "__main__":
     print("Average Edit Distance for each column:")
     for header, distance in avg_edit_distance.items():
         print(f"{header}: {distance}")
-    
+
     print("Accuracy for each column:")
     for header, acc in accuracy.items():
         print(f"{header}: {acc}")

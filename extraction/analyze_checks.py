@@ -12,6 +12,8 @@ Arguments:
     data_folder_path: Input folder of check images.
     out_file: Output .csv file.
     strategy: Specify a strategy. Choices are: LLAVA_AMOUNT_AND_NAME, TEXTRACT_MICR
+    hourly_cost: This flag defaults to 5.672, the price of a ml.g5.12xlarge on demand pricing.
+                 Adjust it to your instance cost to accurately calculate cost / instance.
 
     
 How to Add A New Strategy:

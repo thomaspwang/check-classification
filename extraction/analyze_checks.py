@@ -64,7 +64,18 @@ def LLaVA_amount_and_name(
         headers: list[str], 
         model: Any
 ) -> list[Any]:
-    # TODO: Module Docstring
+    """ Inference function to output check data in the form of [<Check Amount>, <Payer First Name>, <Payer Last Name>].
+
+    Args:
+        file_path: File path to input image
+        headers: should be ["Check Amount", "Payer First Name", "Payer Last Name"]
+        model: A llava model
+
+    The prompt returns "Check Amount : <amount> \n Payer First Name : <first name> ...". To parse this, the string is 
+    split into individual tokens based on \n and :. Then, tokens are processed sequentially in pairs. The first token should be in
+    headers, and then the second token is put in the correct row. If there are any errors, "NA" will be returned for 
+    that value.
+    """
     PROMPT = "Scan the check and list only the following information in key:value form separated by newlines: Check Amount, Payer First Name, Payer Last Name. For each piece of information not present in the check, return \"NA\" as the value. The Payer Name is located in printed text at the top left corner of the check. DO NOT use the Payee name which is handwritten in the center of the check. Validate the Check Amount by comparing the handwritten amount with the digits on the right side of the check. "
     headers = ["Check Amount", "Payer First Name", "Payer Last Name"]
     output = parse_handwriting(file_path, None, ExtractMode.LLAVA, model, PROMPT)
@@ -87,7 +98,7 @@ def textract_micr(
     Args:
         image_path: File path to input image
         headers: should be ["Check Number", "Payer Account Number", "Payer Routing Number"]
-        textract_client: An AWS boto3 textract_client.
+        textract_client: An AWS boto3 textract_client
     """
     try:
         micr_data: MICRData = extract_micr_data(image_path, textract_client)
@@ -105,7 +116,14 @@ def LLAVA_treasury(
         headers: list[str], 
         model: Any
 ):
-    # TODO: docstring
+    """ Inference function to output whether or not a check is a treasury check, outputting ["TreasuryCheck"], ["Check"]
+    or ["NA"] in the case of an error.
+
+    Args:
+        file_path: File path to input image
+        headers: should be ["Check Type"]
+        model: A llava model
+    """
     try:
         if is_treasury_check(file_path, model):
             return ["TreasuryCheck"]
@@ -121,8 +139,24 @@ def analyze_checks(
         inference_function: Callable[[Path, list[str], Any], list[Any]],
         headers: list[str]
 ) -> int:
-    """ TODO: Needs really good module docstring here since this might be confusing
-    
+    """ Function that applies the inference_function to every file in the dataset_path and writes each output
+    as a csv row into the out_file. The headers determine the contents of each row / the columns of the overall file.
+
+    Args:
+        dataset_path: Folder path to all images meant to be processed.
+        out_file: csv file path to write inference output to.
+        inference_function: Each strategy has an inference function associated with it. This function takes in a file path
+                            and some other parameters and returns a row to write to the csv.
+        headers: the column names of the csv.
+
+    This function iterates over all files, in order of their check number. The check number is given by the ## in
+    mcd-test-N-front-##.jpg, and the code below depends on files being named in that exact format; only ## can be a
+    variable amount of characters. This special ordering (which is not the alphanumeric order of the check names)
+    is required as it is the ordering given by the label file from @jts.
+
+    The inference function is then applied to each check in this order, and the output is written to the out_file.
+    Whenever an error occurs in check reading or the data is not found, the special string "NA" is expected. This
+    is important in the downstream script compare_predictions_to_labels.py
     """
     with open(out_file, 'w', newline='') as csv_file:
         # Create a CSV writer object
@@ -139,11 +173,11 @@ def analyze_checks(
             except:
                 # arbitrary large number to kick weird files to the end.
                 return 100000000
-        
+
         files = os.listdir(dataset_path)
 
-        sorted_files = sorted(files, key=comparator)        
-        
+        sorted_files = sorted(files, key=comparator)
+
         # Running the inference function for every file in the input directory.
         for file_name in tqdm(sorted_files, desc="Analyzing check images ..."):
             file_path = os.path.join(dataset_path, file_name)

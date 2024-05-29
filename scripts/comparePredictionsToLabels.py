@@ -60,6 +60,20 @@ def remove_missing_rows(dataset_folder, labels):
             pass
     return new_labels
 
+def add_filename_column(dataset_folder, labels):
+    def comparator(file_string):
+        try:
+            return int(file_string[17:-4])
+        except:
+            # arbitrary large number to kick weird files to the end.
+            return 100000000
+
+    files = os.listdir(dataset_folder)
+    for index in range(len(labels)):
+        labels[index]["check_file_num"] = f"{index+1}"
+    return labels
+
+
 def calculate_average_edit_distance(dataset_folder, predictions, labels, verbose):
     skip_idxs = []
     with open(predictions, 'r') as file:
@@ -72,9 +86,11 @@ def calculate_average_edit_distance(dataset_folder, predictions, labels, verbose
 
     labelData = remove_extra_columns(predictions, labels)
 
+    labelData = add_filename_column(dataset_folder, labelData)
+
     # skip rows of files not present in dataset. This only applies to partial datasets
     labelData = remove_missing_rows(dataset_folder, labelData)
-    
+
     # Dictionary to store average edit distance for each column
     avg_edit_distance = {header: 0 for header in headers}
     counts = {header: 0 for header in headers}
@@ -87,9 +103,9 @@ def calculate_average_edit_distance(dataset_folder, predictions, labels, verbose
     for index, (row1, row2) in enumerate(zip(predictionData, labelData)):
 
         # Empirically if the LLM returns NA for all fields, this means the check image was blank.
-        if all_na(row1):
-            skip_idxs.append(index)
-            continue
+        # if all_na(row1):
+        #     skip_idxs.append(index)
+        #     continue
 
         total_rows +=1
 
@@ -97,8 +113,12 @@ def calculate_average_edit_distance(dataset_folder, predictions, labels, verbose
             value1 = row1[header]
             value2 = row2[header]
 
-            if value1 == "NA":
+            if value1.upper() == "NA":
                 missing_reads[header] += 1
+                if verbose:
+                    print("MICR process error!")
+                    print("Check file num: " + row2["check_file_num"])
+                    print()
                 continue
 
             # data cleaning
@@ -125,7 +145,7 @@ def calculate_average_edit_distance(dataset_folder, predictions, labels, verbose
             if verbose and calculate_edit_distance(value1, value2) > 0:# and header == "Check Amount":
                 print("Prediction, Label")
                 print(value1, value2)
-                print("Check image number " + str(index+1))
+                print("Check file num: " + row2["check_file_num"])
                 print()
 
     # Calculate the average edit distance for each column
@@ -152,7 +172,7 @@ if __name__ == "__main__":
     CHARS_TO_REMOVE = "$,"
     avg_edit_distance, accuracy, hit_rate, missing_reads, total_rows, skip_idxs = \
         calculate_average_edit_distance(args.dataset_folder, args.predictions, args.labels, args.verbose)
-    print("Note": Edit distance and accuracy only account for hits.")
+    print("Note: Edit distance and accuracy only account for hits.")
     print("Average Edit Distance for each column:")
     for header, distance in avg_edit_distance.items():
         print(f"{header}: {distance}")

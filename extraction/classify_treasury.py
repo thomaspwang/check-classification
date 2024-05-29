@@ -1,5 +1,5 @@
 #!./venv/bin/python3.10
-""" This script checks a check is an United States Treasury check.
+""" Module for classifying check images to be Treasury checks or not.
 
 Usage:
     python classify_treasury.py <path_to_check_image>
@@ -21,9 +21,9 @@ import numpy as np
 from extract_bboxes import (
     extract_bounding_boxes_from_path,
 )
-from extract_handwriting import (
+from parse_bbox import (
     generate_LLaVA_model,
-    parse_handwriting,
+    parse_bbox,
     ExtractMode,
 )
 from extraction_utils import crop_image
@@ -39,7 +39,7 @@ def is_treasury_check(img_path: Path, model: any) -> bool:
     # Uses LLAVA to see if UNITED STATES TREASURY is present in the check.
 
     PROMPT = "Is the word \"UNITED STATES TREASURY\" written in a Gothic / Old English font present on this check? Only answer one word: True or False."
-    output = parse_handwriting(img_path, None, ExtractMode.LLAVA, model, PROMPT)
+    output = parse_bbox(img_path, None, ExtractMode.LLAVA, model, PROMPT)
     if output.upper() == "TRUE":
         return True
     elif output.upper() == "FALSE":

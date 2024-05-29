@@ -90,16 +90,3 @@ def parse_handwriting_llava(
     cropped_image = crop_image(img_path, box)
     cropped_image.save(TEMPFILE_PATH)
     return model.eval(TEMPFILE_PATH, prompt)
-
-# if __name__ == "__main__":
-#     if len(sys.argv) != 7:
-#         print("Usage: python3 extract_handwriting.py <image_path> <x> <y> <width> <height> <mode>")
-#         sys.exit(1)
-    
-#     # Parse the image path from command-line arguments
-#     image_path = Path(sys.argv[1])
-#     boundingBox = BoundingBox(x=int(sys.argv[2]), y=int(sys.argv[3]), width=int(sys.argv[4]), height=int(sys.argv[5]))
-#     mode = Mode(sys.argv[6])
-    
-#     parsed_string = parse_handwriting(image_path, boundingBox, mode)
-#     print(f"Parsed Handwriting: {parsed_string}")

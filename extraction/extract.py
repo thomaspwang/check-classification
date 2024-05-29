@@ -33,7 +33,7 @@ from extract_bboxes import (
     merge_nearby_boxes,
     merge_overlapping_boxes,
 )
-from extract_handwriting import (
+from parse_bbox import (
     generate_doctr_model,
     generate_LLaVA_model,
     parse_handwriting,

@@ -3,6 +3,9 @@
 
 This script takes a .numbers file as input and converts it to a .csv file. 
 
+Note that it is highly recommended to use an online converter or your local
+Mac converter if you can instead of this script.
+
 Usage:
     python convert_numbers_to_csv.py file_path output_path
 

@@ -1,8 +1,26 @@
 #!./venv/bin/python3.10
-""" Main script for extracting data from check images. 
+"""
+Main script for extracting data from check images using AWS Textract and various OCR models.
 
-This module is responsible for orchestrating the different extraction methods 
-in the extraction package.
+This module orchestrates different extraction methods provided in the sofi-check-classification/extraction package 
+to process check images, extract bounding boxes, merge nearby and overlapping boxes if specified, 
+and then extract data from these boxes using specified a specified model.
+
+Currently, you can use either LLaVA or docTR to extract data. However, as of the time of this commit,
+doctr performs significantly worse than LLaVA.
+
+Usage:
+    python extract.py <img_path> --model <model>
+
+Example:
+    python extract.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg --model llava
+
+Functions:
+    extract_data(img_path: Path, textract_client, extract_mode: ExtractMode, merge_boxes: bool = False) -> str:
+        Extracts data from a check image using specified extraction mode and optionally merges bounding boxes.
+
+
+To run the script, ensure that AWS credentials are configured correctly.
 """
 
 import argparse
@@ -78,11 +96,6 @@ def extract_data(
 
 
 if __name__ == "__main__":
-    """
-    Prints the output data for a given image and a specified model.
-    """
-    # TODO: Improve cmd interface
-
     parser = argparse.ArgumentParser()
     parser.add_argument('img_path', type=str, help='File path containing the image.')
     parser.add_argument('-m', '--model', choices=['llava', 'doctr'], required=True, help="Specify 'llava' or 'doctr' as the model to use.")

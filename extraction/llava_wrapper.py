@@ -1,3 +1,24 @@
+""" Wraps the llava library into a callable class, which allows one to feed in a prompt and an image
+and recieve a text response.
+
+Example:
+    model = LLaVA()
+    model.eval("../data/image.jpg", "print the text on this image")
+
+Classes:
+    LLaVA:
+        Wraps the llava library. The only functions meant to be used are __init__ and eval.
+
+        Args:
+            model_path: This path will be checked first locally and then on huggingface. A full list
+            of huggingface models usable is listed here: https://github.com/haotian-liu/LLaVA/blob/main/docs/MODEL_ZOO.md
+
+            temperature: how random / non-deterministic generated output should be.
+            max_new_tokens: how many words the model is allowed to generate.
+            quantize: when True, the 4-bit quantized model is used, reducing memory consumption by 75%.
+
+"""
+
 import argparse
 import torch
 
@@ -23,7 +44,6 @@ from io import BytesIO
 import re
 
 class LLaVA:
-    # TODO: make model_path an enum
     def __init__(self, model_path, model_base=None, conv_mode=None, temperature=0, top_p=None, num_beams=1, max_new_tokens=512, quantize=True):
         disable_torch_init()
         self.conv_mode = conv_mode

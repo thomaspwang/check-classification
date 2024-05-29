@@ -177,10 +177,10 @@ should all work. Examples of label files are in the datasets provided by @jtongs
 to csvs and that will be a valid label file.
 
 <br> **3. Run Inference on the Dataset** <br>
-`cd sofi-check-classification`
+`cd sofi-check-classification`<br>
 `python extraction/analyze_checks.py <path_to_dataset_folder> <path_to_output_csv> <strategy>`
 
-example:
+example:<br>
 `python extraction/analyze_checks.py ../mcd-test-3-front-images/ ../LLAVA_TREASURY_PREDICTIONS.csv LLAVA_TREASURY`
 This will compute some statistics like seconds / inference and $ / inference.
 
@@ -188,7 +188,7 @@ This will compute some statistics like seconds / inference and $ / inference.
 To compute statistics like hit rate, accuracy and edit distance, run
 `python scripts/compare_predictions_to_labels.py <path_to_dataset_folder> <path_to_prediction_csv> <path_to_labels> --verbose`
 
-example:
+example:<br>
 `python scripts/compare_predictions_to_labels.py ../mcd-test-3-front-images/ ../LLAVA_TREASURY_PREDICTIONS.csv ../mcd-test-3-image-details.csv --verbose`
 
 ## Possible TO-DOs

@@ -26,7 +26,11 @@ from pathlib import Path
 from extract_bboxes import BoundingBox
 from PIL import Image
 
-def crop_image(image_path: Path, bbox: BoundingBox):
+def crop_image(image_path: Path, bbox: BoundingBox) -> Image:
+    """ Crops the image at image_path bounding by bbox and returns a Pillow Image
+
+    If bbox is None, then no cropping occurs
+    """
     image = Image.open(image_path)
 
     if image.mode == 'RGBA':

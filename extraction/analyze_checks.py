@@ -33,12 +33,12 @@ from enum import Enum
 from pathlib import Path
 from tqdm import tqdm
 from extract import extract_data
-from extract_bboxes import textdump_from_path
 from extract_handwriting import (
     generate_LLaVA_model,
     parse_handwriting,
     ExtractMode,
 )
+from classify_treasury import is_treasury_check
 from extract_micr import extract_micr_data, MICRData, MICRExtractionError
 import numpy as np
 from typing import Callable, Any
@@ -105,14 +105,13 @@ def LLAVA_treasury(
         headers: list[str], 
         model: Any
 ):
-    PROMPT = "Is the word \"UNITED STATES TREASURY\" written in a Gothic / Old English font present on this check? Only answer one word: True or False."
-    output = parse_handwriting(Path(file_path), None, ExtractMode.LLAVA, model, PROMPT)
-    if output.upper() == "TRUE":
-        return ["TreasuryCheck"]
-    elif output.upper() == "FALSE":
-        return ["Check"]
-    else:
-        print("check processing error")
+    # TODO: docstring
+    try:
+        if is_treasury_check(file_path, model):
+            return ["TreasuryCheck"]
+        else:
+            return ["Check"]
+    except ValueError:
         return ["NA"]
 
 # processes check images
@@ -143,9 +142,9 @@ def analyze_checks(
         
         files = os.listdir(dataset_path)
 
-        sorted_files = sorted(files, key=comparator)
-
-        # TODO: All this os stuff should be replaced with pathlib Path operations
+        sorted_files = sorted(files, key=comparator)        
+        
+        # Running the inference function for every file in the input directory.
         for file_name in tqdm(sorted_files, desc="Analyzing check images ..."):
             file_path = os.path.join(dataset_path, file_name)
             file_path = Path(file_path)

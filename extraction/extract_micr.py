@@ -8,7 +8,26 @@ Usage:
     python extract_micr.py <image_path>
 
 Example:
-    python extract_micr.py data/mcd-test-3-front-images/mcd-test-3-front-93.jpg
+    python extract_micr.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg
+
+Functions:
+    extract_micr_data(image_path: Path, textract_client) -> MICRData | None:
+        Extracts MICR data from a check image.
+
+    find_first_micr_bounding_box(image_path: Path, textract_client) -> BoundingBox | None:
+        Finds the first bounding box that contains the MICR symbol '⑆'. Returns None otherwise.
+
+    parse_micr_string(micr_string: str) -> MICRData:
+        Parses the MICR string to extract routing number, account number, and check number.
+
+Classes:
+    MICRData:
+        Represents MICR data with routing number, account number, and check number.
+
+    MICRExtractionError:
+        Exception raised for errors in MICR Extraction.
+
+To run the script, ensure that AWS credentials are configured correctly.
 """
 
 import boto3
@@ -35,10 +54,6 @@ from extraction_utils import (
 AWS_PROFILE_NAME = 'thwang'
 AWS_REGION_NAME = 'us-west-2'
 
-# The amount removed from the top, aka (1 - CROPPING_PERCENTAGE) from the bottom.
-# This number was calculated from taking the maximum MICR bbox ratio of all MICR check samples.
-# TODO: This is a pretty naive solution, would probably be better to calculate from the bottom bottom and up.
-CROPPING_PERCENTAGE = 0.80
 
 @dataclass(frozen=True)
 class MICRData:

@@ -3,13 +3,13 @@ Module for extracting and visualizing bounding boxes from a check image using AW
 
 This script processes a check image, extracts bounding boxes using AWS Textract, 
 optionally merges nearby and overlapping bounding boxes, and saves the resulting 
-image with bounding boxes drawn on it.
+image with bounding boxes drawn on it to a specific output file..
 
 Usage:
     python extract_bboxes.py <input_image_path> <output_image_path>
 
 Example:
-    python extract_bboxes.py data/mcd-test-3-front-images/mcd-test-3-front-93.jpg results/resized_image.jpg
+    python extract_bboxes.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg results/resized_image.jpg
 
 
 Functions:
@@ -17,9 +17,18 @@ Functions:
         Extracts bounding boxes from a check image stored locally.
 
     extract_bounding_boxes_from_s3(file_name: str, textract_client, s3_resource) -> list[BoundingBox]:
-        Extracts bounding boxes from a check image stored in an S3 bucket.
+        Extracts bounding boxes from a check image stored in an S3 bucket. 
+        Note: Deprecated
 
-        TODO: Update? Probably is deprecated
+    merge_nearby_boxes(bboxes: list[BoundingBox], max_center_distance: int, max_corner_distance: int) -> list[BoundingBox]:
+        Merges nearby bounding boxes based on center distance and corner distance.
+
+    merge_overlapping_boxes(boxes: list[BoundingBox]) -> list[BoundingBox]:
+        Merges overlapping bounding boxes.
+
+    draw_bounding_boxes_on_image(image_path: Path, bounding_boxes: list[BoundingBox], output_path: Path):
+        Draws bounding boxes on an image and saves the result to the specified output path.
+
 
 Classes:
     BoundingBox:
@@ -81,7 +90,7 @@ def extract_bounding_boxes_from_path(
     
     Args:
         img_path: File path of input image.
-        client: An AWS boto3 textract_client.
+        textract_client: An AWS boto3 textract client object.
 
     Returns:
         A list of BoundingBox objects.
@@ -107,55 +116,22 @@ def extract_bounding_boxes_from_path(
             boundingbox_list.append(bbox)
     return boundingbox_list
 
-def textdump_from_path(
-        img_path: Path,
-        textract_client,
-) -> list[str]:
-    """ Dumps text from a check image stored locally. 
-    
-    TODO: Remove?
-
-    Requires AWS_PROFILE_NAME and AWS_REGION_NAME to be set correctly.
-    
-    Args:
-        img_path: File path of input image.
-        client: An AWS boto3 textract_client.
-
-    Returns:
-        A list of BoundingBox objects.
-    """
-
-    image = Image.open(img_path)
-    width, height = image.size
-    with img_path.open(mode="rb") as f:
-        response = textract_client.detect_document_text(
-            Document={'Bytes': f.read()}
-        )
-    
-    blocks = response['Blocks']
-    text_lines = []
-    
-    for block in blocks:
-        if block['BlockType'] == 'LINE':
-            text_lines.append(block['Text'])
-
-    return text_lines
-
 def extract_bounding_boxes_from_s3(
         file_name: str,
         textract_client,
         s3_resource,
 ) -> list[BoundingBox]:
-    # TODO: Refactor to be the same as above
     """ Extract bounding boxes from check image stored in an S3 Bucket. 
 
     Requires AWS_PROFILE_NAME, AWS_BUCKET_NAME, and AWS_REGION_NAME to be set correctly.
     
     Args:
-        file_name: file name of the check image in s3
+        file_name: file name of the check image in s3.
+        textract_client: An AWS boto3 textract object.
+        s3_resource: An AWS s3 resource object.
 
     Returns:
-        list[BoundingBox]: list of bounding boxes with coordinates and dimensions
+        list[BoundingBox]: list of bounding boxes with coordinates and dimensions.
     """
     s3_object = s3_resource.Object(AWS_BUCKET_NAME, file_name)
     s3_response = s3_object.get()
@@ -332,11 +308,6 @@ def draw_bounding_boxes_on_image(image_path: Path, bounding_boxes: list[Bounding
     cv2.imwrite(str(output_path), image)
 
 if __name__ == "__main__":
-    """
-    Demonstrats the bounding box extraction by displaying bounding boxes on a specific check.
-
-    TODO: Input / output command line args
-    """
     parser = argparse.ArgumentParser(description="Demonstrate bounding box extraction by displaying bounding boxes on a specific check.")
     parser.add_argument('input', type=str, help='Path to the input check image.')
     parser.add_argument('output', type=str, help='Path to save the output image with bounding boxes.')

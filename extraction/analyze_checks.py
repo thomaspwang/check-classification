@@ -46,9 +46,6 @@ from typing import Callable, Any
 AWS_PROFILE_NAME = 'thwang'
 AWS_REGION_NAME = 'us-west-2'
 
-# Hourly cost for a ml.g5.12xLarge EC2 instance
-HOURLY_COST = 5.672
-
 class Strategy(Enum):
     """ Represents an extraction strategy.
 
@@ -167,10 +164,15 @@ if __name__ == "__main__":
     parser.add_argument('data_folder_path', type=str, help='Input folder of check images.')
     parser.add_argument('out_file', type=str, help='Output .csv file.')
     parser.add_argument('strategy', type=Strategy, choices=Strategy, help='Specify a strategy.')
+    parser.add_argument('--hourly_cost', default=5.672, type=float, help='Optional argument')
+
 
     args = parser.parse_args()
     data_folder_path = Path(args.data_folder_path)
     outfile_path = Path(args.out_file)
+
+    # Hourly cost for a ml.g5.12xLarge EC2 instance
+    HOURLY_COST = args.hourly_cost
 
     model: Any  # Strategy model
     match args.strategy:

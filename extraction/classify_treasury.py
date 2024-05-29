@@ -1,5 +1,15 @@
 #!./venv/bin/python3.10
-""" TODO: Module Docstring
+""" This script checks a check is an United States Treasury check.
+
+Usage:
+    python classify_treasury.py <path_to_check_image>
+
+Example:
+    python classify_treasury.py ../data/mcd-test-3-front-images/mcd-test-3-front-93.jpg
+
+Functions:
+    is_treasury_check(img_path: Path, model: any) -> bool:
+        Returns true if the image is a treasury check, false if it is not.
 """
 
 import argparse

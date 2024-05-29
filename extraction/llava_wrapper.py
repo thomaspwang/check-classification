@@ -1,4 +1,5 @@
-""" Wraps the llava library into a callable class, which allows one to feed in a prompt and an image
+""" 
+Wraps the LLaVA library into a callable class, which allows one to feed in a prompt and an image
 and recieve a text response.
 
 Example:

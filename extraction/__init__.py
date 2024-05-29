@@ -29,4 +29,8 @@ Modules:
     extraction_utils:
         Utility functions for check data extraction. Provides functions for cropping images to bounding boxes, 
         merging bounding boxes, and stretching bounding boxes.
+
+    llava_wrapper:
+        Wraps the LLaVA library into a callable class, which allows one to feed in a prompt and an image
+        and recieve a text response.
 """

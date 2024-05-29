@@ -66,7 +66,7 @@ An out-of-disk-space error will occur as libraries and model weights will downlo
 For local testing and development, we recommend creating a local folder such as `sofi-check-classification/data` for PII images and labeled data.
 
 ## Usage Example
-```
+```python
 import boto3
 from classify_treasury import is_treasury_check
 from extract_micr import extract_micr_data, MICRData, MICRExtractionError

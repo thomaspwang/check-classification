@@ -8,8 +8,6 @@
 
 ## Environment Setup
 
-You only need perform steps 1 through 4 **once**. You can check if you've completed the environment by checking that a `.venv/` file exists in your local repository. 
-
 <br> **Step 0** <br>
 We used AWS SageMaker notebooks throughout the development of this project. Ensure that your notebook is using at least a `ml.g5.2xlarge` instance. However, to run models in their non-quantized form, you must use at least a `ml.g5.12xlarge` instance. Lastly, we recommend using a volume size of atleast 500GB EBS since the LLaVA model is large.
 

@@ -172,8 +172,8 @@ Obtain a dataset of check images and put it in a folder. The image file names mu
 
 The label file should be a csv with each row corresponding directly to the check number (e.g. row 0 are the headers,
 and row 1 corresponds to `mcd-test-N-front-1.jpg`. The label file must be contiguous, but the dataset
-does not need to include all files specified by the label set. The datasets provided by @jts (N=1-5)
-should all work. Examples of label files are in the datasets provided by @jts; convert the mcd-test-N-image-details.numbers
+does not need to include all files specified by the label set. The datasets provided by @jtongseely (N=1-5)
+should all work. Examples of label files are in the datasets provided by @jtongseely; convert the mcd-test-N-image-details.numbers
 to csvs and that will be a valid label file.
 
 <br> **3. Run Inference on the Dataset** <br>

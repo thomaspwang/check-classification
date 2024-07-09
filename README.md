@@ -1,5 +1,3 @@
-### DiversaTech x Sofi Spring 2024
-
 # Check Classification and Fraud Detection
 
 ## Overview
